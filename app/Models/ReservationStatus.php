@@ -12,6 +12,7 @@ class ReservationStatus extends Model
     const INICIADA = 1;
     const CONFIRMADA = 2;
     const CANCELADA = 3;
+    const RECHAZADA = 4;
 
     protected $table = 'reservations_status';
 

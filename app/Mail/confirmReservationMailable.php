@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Mail;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Mailable;
+use Illuminate\Queue\SerializesModels;
+
+class confirmReservationMailable extends Mailable
+{
+    use Queueable, SerializesModels;
+    public $data, $subject;
+    /**
+     * Create a new message instance.
+     *
+     * @return void
+     */
+    public function __construct($data)
+    {
+        $this->data = $data;
+        $reservation_number = $data['reservation_number'];
+        $this->subject = "Confirmacion reserva N° $reservation_number - EH Boutique Experience";
+    }
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->subject($this->subject)
+                    ->view('emails.confirmReservation');
+    }
+}

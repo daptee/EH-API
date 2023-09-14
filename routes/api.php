@@ -37,6 +37,10 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
     // Reservation Controller
     Route::post('reservations', [ReservationController::class, 'store']);
+    Route::post('reservations/confirm', [ReservationController::class, 'confirm_reservation']);
+    Route::post('reservations/payment/rejection', [ReservationController::class, 'payment_rejection']);
+    Route::post('reservations/cancel', [ReservationController::class, 'cancel_reservation']);
+
 });
 
 // Clear cache

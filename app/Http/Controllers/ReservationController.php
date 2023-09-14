@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\confirmReservationMailable;
+use App\Models\RejectedReservation;
 use App\Models\Reservation;
 use App\Models\ReservationStatus;
+use App\Models\ReservationStatusHistory;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ReservationController extends Controller
 {
@@ -24,6 +31,10 @@ class ReservationController extends Controller
         $request->validate([
             'reservation_number' => 'required',
         ]);
+
+        $reservation = Reservation::where('reservation_number', $request->reservation_number)->first();
+        if($reservation)
+            return response()->json(['message' => 'Reserva ya existente.'], 400);
         
         try {
             $reservation = new Reservation();
@@ -32,11 +43,131 @@ class ReservationController extends Controller
             $reservation->save();
             
         } catch (Exception $error) {
+            Log::debug("error al guardar reserva: " . $error->getMessage() . ' line: ' . $error->getLine());
             return response(["error" => $error->getMessage()], 500);
         }
        
         $reservation = Reservation::getAllReservation($reservation->id);
 
         return response()->json(['message' => 'Reserva guardada con exito.', 'reservation' => $reservation], 200);
+    }
+
+    public function confirm_reservation(Request $request)
+    {
+        $request->validate([
+            "reservation_id" => ['required', 'integer', Rule::exists('reservations', 'id')],
+            "user" => 'required',
+        ]);
+
+        $reservation = Reservation::find($request->reservation_id);
+
+        try {
+            DB::transaction(function () use($request, $reservation) {
+
+                $status_id = ReservationStatus::CONFIRMADA;
+                
+                // Actualizamos estado en reserva
+                $reservation->status_id = $status_id;
+                $reservation->save();
+
+                // Almacenamos historial de estado en reserva
+                ReservationStatusHistory::saveHistoryStatusReservation($request->reservation_id, $status_id);
+                
+            });
+            $data = [
+                'reservation_number' => $reservation->reservation_number,
+                'name' => $request->user['name'],
+                'last_name' => $request->user['last_name'],
+                'check_in' => $request->user['check_in'],
+                'check_out' => $request->user['check_out'],
+                'number_of_passengers' => $request->number_of_passengers,
+                'email' => $request->user['email'],
+            ];
+
+            Mail::to('sl.larramendy@gmail.com')->send(new confirmReservationMailable($data));
+        } catch (Exception $error) {
+            Log::debug([
+                "error al confirmar reserva: " . $error->getMessage(),
+                "line: " . $error->getLine(),
+                "ID reserva: " . $request->reservation_id
+            ]);
+            return response(["error" => $error->getMessage()], 500);
+        }
+
+        $reservation = Reservation::getAllReservation($reservation->id);
+
+        return response()->json(['message' => 'Reserva confirmada con exito.', 'reservation' => $reservation], 200);
+    }
+
+    public function payment_rejection(Request $request)
+    {
+        $request->validate([
+            "reservation_id" => ['required', 'integer', Rule::exists('reservations', 'id')],
+            "reason_rejection" => 'required',
+        ]);
+
+        $reservation = Reservation::find($request->reservation_id);
+
+        try {
+            DB::transaction(function () use($request, $reservation) {
+
+                $status_id = ReservationStatus::RECHAZADA;
+
+                // Actualizamos estado en reserva
+                $reservation->status_id = $status_id;
+                $reservation->save();
+
+                // Almacenamos razon del rechazo en reserva
+                RejectedReservation::saveReasonRejection($request->reservation_id, $request->reason_rejection);
+                
+                // Almacenamos historial de estado en reserva
+                ReservationStatusHistory::saveHistoryStatusReservation($request->reservation_id, $status_id);
+            });
+        } catch (Exception $error) {
+            Log::debug([
+                "error al rechazar reserva: " . $error->getMessage(),
+                "line: " . $error->getLine(),
+                "ID reserva: " . $request->reservation_id
+            ]);
+            return response(["error" => $error->getMessage()], 500);
+        }
+
+        $reservation = Reservation::getAllReservation($reservation->id);
+
+        return response()->json(['message' => 'Reserva rechazada con exito.', 'reservation' => $reservation], 200);
+    }
+
+    public function cancel_reservation(Request $request)
+    {
+        $request->validate([
+            "reservation_id" => ['required', 'integer', Rule::exists('reservations', 'id')],
+        ]);
+
+        $reservation = Reservation::find($request->reservation_id);
+
+        try {
+            DB::transaction(function () use($request, $reservation) {
+
+                $status_id = ReservationStatus::CANCELADA;
+
+                // Actualizamos estado en reserva
+                $reservation->status_id = $status_id;
+                $reservation->save();
+
+                // Almacenamos historial de estado en reserva
+                ReservationStatusHistory::saveHistoryStatusReservation($request->reservation_id, $status_id);
+            });
+        } catch (Exception $error) {
+            Log::debug([
+                "error al cancelar reserva: " . $error->getMessage(),
+                "line: " . $error->getLine(),
+                "ID reserva: " . $request->reservation_id
+            ]);
+            return response(["error" => $error->getMessage()], 500);
+        }
+
+        $reservation = Reservation::getAllReservation($reservation->id);
+
+        return response()->json(['message' => 'Reserva cancelada con exito.', 'reservation' => $reservation], 200);
     }
 }

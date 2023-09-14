@@ -55,7 +55,7 @@ class AuthController extends Controller
         $user_to_validate = User::where('email', $request->email)->first();
         
         if(!isset($user_to_validate) || $user_to_validate->user_type_id != UserType::ADMIN)
-            return response()->json(['message' => 'Email no existente o usuario no admin.'], 400);
+            return response()->json(['message' => 'Email y/o clave no válidos.'], 400);
         
         $credentials = $request->only('email', 'password');
 
