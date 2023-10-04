@@ -27,6 +27,12 @@ Route::controller(UserController::class)->group(function () {
     Route::post('recover-password', 'recover_password_user');
 });
 
+// Reservation Controller
+Route::post('reservations', [ReservationController::class, 'store']);
+Route::post('reservations/confirm', [ReservationController::class, 'confirm_reservation']);
+Route::post('reservations/payment/rejection', [ReservationController::class, 'payment_rejection']);
+Route::post('reservations/cancel', [ReservationController::class, 'cancel_reservation']);
+
 Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     
@@ -34,12 +40,6 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('users/update', [UserController::class, 'update']);
     Route::get('users/{id}', [UserController::class, 'show']);
     Route::post('users/update/profile/picture', [UserController::class, 'update_profile_picture']);
-
-    // Reservation Controller
-    Route::post('reservations', [ReservationController::class, 'store']);
-    Route::post('reservations/confirm', [ReservationController::class, 'confirm_reservation']);
-    Route::post('reservations/payment/rejection', [ReservationController::class, 'payment_rejection']);
-    Route::post('reservations/cancel', [ReservationController::class, 'cancel_reservation']);
 
 });
 
