@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 use App\Mail\confirmReservationMailable;
+use App\Mail\TestMail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -55,31 +56,13 @@ Route::get('/clear-cache', function() {
     ]);
 });
 
-Route::get('test_mail',  function(){
-    $data = [
-        'reservation_number' => '123',
-        'name' => 'test',
-        'last_name' => 'test',
-        'check_in' => 'test',
-        'check_out' => 'test',
-        'number_of_passengers' => 4,
-        'email' => 'test',
-    ];
-
+Route::get('test-mail', function() {
     try {
-        // Mail::to('sl.larramendy@gmail.com')->send(new confirmReservationMailable($data));
-        Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
-    } catch (Exception $error) {
-        Log::debug([
-            "message"=> "Proceso correcto. Error en envio de mail",
-            "line" => $error->getLine(),
-            "error" => $error->getMessage(),
-        ]);
-
-        return response([
-            "message" => "Proceso correcto. Error al enviar resumen a su casilla de mail",
-            "status" => 600,
-            "error" => $error->getMessage(),
-        ], 200);
+        $text = "Test de envio de mail Hielo y Aventura";
+        Mail::to("enzo100amarilla@gmail.com")->send(new TestMail("enzo100amarilla@gmail.com", $text));
+        return 'Mail enviado';
+    } catch (\Throwable $th) {
+        Log::debug(print_r([$th->getMessage(), $th->getLine()],  true));
+        return 'Mail no enviado';
     }
 });
