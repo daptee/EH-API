@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EhBoutiqueController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 use App\Mail\confirmReservationMailable;
@@ -44,6 +45,20 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::get('users/{id}', [UserController::class, 'show']);
     Route::post('users/update/profile/picture', [UserController::class, 'update_profile_picture']);
 
+});
+
+Route::prefix('eh')->group(function () {
+    Route::controller(EhBoutiqueController::class)->group(function () {
+        Route::get('Naciones', 'Naciones');
+        Route::get('Tarifas', 'Tarifas');
+        Route::get('Disponibilidad', 'Disponibilidad');
+        Route::get('ReservaxCodigo', 'ReservaxCodigo');
+        Route::get('Articulos', 'Articulos');
+        Route::post('CancelaReserva', 'CancelaReserva');
+        Route::post('IniciaReserva', 'IniciaReserva');
+        Route::post('ConfirmaReserva', 'ConfirmaReserva');
+        Route::post('ConfirmaPasajeros', 'ConfirmaPasajeros');
+    });
 });
 
 // Clear cache
