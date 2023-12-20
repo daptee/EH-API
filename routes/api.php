@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EhBoutiqueController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
+use App\Mail\confirmReservationMailable;
+use App\Mail\TestMail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -43,6 +47,20 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
 });
 
+Route::prefix('eh')->group(function () {
+    Route::controller(EhBoutiqueController::class)->group(function () {
+        Route::get('Naciones', 'Naciones');
+        Route::get('Tarifas', 'Tarifas');
+        Route::get('Disponibilidad', 'Disponibilidad');
+        Route::get('ReservaxCodigo', 'ReservaxCodigo');
+        Route::get('Articulos', 'Articulos');
+        Route::post('CancelaReserva', 'CancelaReserva');
+        Route::post('IniciaReserva', 'IniciaReserva');
+        Route::post('ConfirmaReserva', 'ConfirmaReserva');
+        Route::post('ConfirmaPasajeros', 'ConfirmaPasajeros');
+    });
+});
+
 // Clear cache
 Route::get('/clear-cache', function() {
     Artisan::call('config:clear');
@@ -51,4 +69,15 @@ Route::get('/clear-cache', function() {
     return response()->json([
         "message" => "Cache cleared successfully"
     ]);
+});
+
+Route::get('test-mail', function() {
+    try {
+        $text = "Test de envio de mail Hielo y Aventura";
+        Mail::to("enzo100amarilla@gmail.com")->send(new TestMail("enzo100amarilla@gmail.com", $text));
+        return 'Mail enviado';
+    } catch (\Throwable $th) {
+        Log::debug(print_r([$th->getMessage(), $th->getLine()],  true));
+        return 'Mail no enviado';
+    }
 });

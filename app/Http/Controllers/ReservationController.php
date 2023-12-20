@@ -84,7 +84,22 @@ class ReservationController extends Controller
                 'email' => $request->user['email'],
             ];
 
-            Mail::to('sl.larramendy@gmail.com')->send(new confirmReservationMailable($data));
+            try {
+                // Mail::to('sl.larramendy@gmail.com')->send(new confirmReservationMailable($data));
+                Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
+            } catch (Exception $error) {
+                Log::debug([
+                    "message"=> "Proceso correcto. Error en envio de mail",
+                    "line" => $error->getLine(),
+                    "error" => $error->getMessage(),
+                ]);
+
+                return response([
+                    "message" => "Proceso correcto. Error al enviar resumen a su casilla de mail",
+                    "status" => 600,
+                    "error" => $error->getMessage(),
+                ], 200);
+            }
         } catch (Exception $error) {
             Log::debug([
                 "error al confirmar reserva: " . $error->getMessage(),
