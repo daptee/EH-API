@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EhBoutiqueController;
+use App\Http\Controllers\FormController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 use App\Mail\confirmReservationMailable;
@@ -22,8 +23,8 @@ use Illuminate\Support\Facades\Mail;
 */
 
 Route::controller(AuthController::class)->group(function () {
-    Route::post('login', 'login');
-    Route::post('register', 'register');
+    Route::post('login_super_admin', 'login_super_admin');
+    // Route::post('register', 'register');
 });
 
 // User Controller GROUP
@@ -37,13 +38,16 @@ Route::post('reservations/confirm', [ReservationController::class, 'confirm_rese
 Route::post('reservations/payment/rejection', [ReservationController::class, 'payment_rejection']);
 Route::post('reservations/cancel', [ReservationController::class, 'cancel_reservation']);
 
+// Form controller
+Route::post('form/contact', [FormController::class, 'form_contact']);
+
 Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     
     // User Controller
-    Route::post('users/update', [UserController::class, 'update']);
-    Route::get('users/{id}', [UserController::class, 'show']);
-    Route::post('users/update/profile/picture', [UserController::class, 'update_profile_picture']);
+    // Route::post('users/update', [UserController::class, 'update']);
+    // Route::get('users/{id}', [UserController::class, 'show']);
+    // Route::post('users/update/profile/picture', [UserController::class, 'update_profile_picture']);
 
 });
 

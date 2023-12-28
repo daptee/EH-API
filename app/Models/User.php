@@ -58,7 +58,7 @@ class User extends Authenticatable implements JWTSubject
 
     public static function getAllDataUser($id)
     {
-        return User::find($id);
+        return User::with(['user_type'])->find($id);
     }
 
     public function locality(): HasOne
