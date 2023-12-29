@@ -11,8 +11,10 @@ class UserType extends Model
 
     protected $table = 'users_types';
 
-    const CLIENTE = 1;
-    const ADMIN = 2;
+    const SUPERADMIN = 1;
+    const ADMIN_EH = 2;
+    const ADMIN_SUKHA = 3;
+    const ADMIN_CAFETERIA = 4;
 
     protected $hidden = ['created_at', 'updated_at'];
 }

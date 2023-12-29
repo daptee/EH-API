@@ -13,7 +13,7 @@ class EhBoutiqueController extends Controller
         if($environment == "DEV"){
             $url = "https://apieh.ehboutiqueexperience.com:8086";
         }else{
-            $url = "https://apieh.ehboutiqueexperience.com:8086";
+            $url = "https://apieh.ehboutiqueexperience.com:8086"; // cambiar PROD
         }
 
         $client = new \GuzzleHttp\Client([
@@ -24,17 +24,44 @@ class EhBoutiqueController extends Controller
         return $client;
     }
     
+    // public function Naciones()
+    // {
+    //     $client = $this->get_url();
+    //     $response = $client->get("/Naciones");   
+       
+    //     if ($response->getStatusCode() == 200) {
+    //         return json_decode($response->getBody()->getContents());
+    //     } else {
+    //         return $response->getBody()->getContents();
+    //     }
+    // }
+
+    // public function Naciones()
+    // {
+    //     // $url = $this->get_url();
+    //     $response = Http::get("https://apieh.ehboutiqueexperience.com:8086/Naciones");   
+    //     if ($response->successful()) {
+    //         return $response->json();
+    //     } else {
+    //         return $response->throw();
+    //     }
+    // }
+
     public function Naciones()
     {
-        $client = $this->get_url();
-        $response = $client->get("/Naciones");   
-       
-        if ($response->getStatusCode() == 200) {
-            return json_decode($response->getBody()->getContents());
-        } else {
-            return $response->getBody()->getContents();
+        try {
+            $client = $this->get_url();
+            $response = $client->get("/Naciones");
+            if ($response->getStatusCode() == 200) {
+                return json_decode($response->getBody()->getContents());
+            } else {
+                return response()->json(['error' => 'Error en la solicitud a la API externa'], $response->getStatusCode());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
     public function Tarifas()
     {
