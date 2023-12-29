@@ -9,7 +9,7 @@
 <body>
     <p>
         Hola. Te informamos que han enviado una nueva consulta por la web. <br>
-        Lo mando <br>
+        Lo mandó <br>
         <br>
         Nombre: {{ $data['name'] }} <br>
         Email: {{ $data['email'] }} <br>
