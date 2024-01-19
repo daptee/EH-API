@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EhBoutiqueController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 use App\Mail\confirmReservationMailable;
@@ -40,6 +41,9 @@ Route::post('reservations/cancel', [ReservationController::class, 'cancel_reserv
 
 // Form controller
 Route::post('form/contact', [FormController::class, 'form_contact']);
+
+// Newsletter
+Route::post('newsletter/register/email', [NewsletterController::class, 'newsletter_register_email']);
 
 Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
