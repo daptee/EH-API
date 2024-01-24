@@ -8,7 +8,7 @@
 </head>
 <body>
     <p>
-        Hola {{ $data['name'] . ' ' . $data['last_name'] }}. <br>
+        Hola {{ $data['name'] }}. <br>
         <br>
         Te informamos que el codigo para ingresar a la habitacion numero {{ $data['room_number'] }} es: <br>
         <br>

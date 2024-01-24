@@ -147,7 +147,6 @@ class UserController extends Controller
             'reservation_number' => 'required',
             'contact_email' => 'required',
             'name' => 'required',
-            'last_name' => 'required',
             'room_number' => 'required',
             'code' => 'required',
         ]);
