@@ -45,6 +45,9 @@ Route::post('form/contact', [FormController::class, 'form_contact']);
 // Newsletter
 Route::post('newsletter/register/email', [NewsletterController::class, 'newsletter_register_email']);
 
+// Mail send code
+Route::post('send/code/email', [UserController::class, 'send_code_email']);
+
 Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     

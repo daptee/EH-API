@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\recoverPasswordMailable;
+use App\Mail\SendCodeMail;
 use App\Models\Locality;
 use App\Models\User;
 use Exception;
@@ -138,5 +139,26 @@ class UserController extends Controller
         
 
         return $path;
+    }
+
+    public function send_code_email(Request $request)
+    {
+        $request->validate([
+            'reservation_number' => 'required',
+            'contact_email' => 'required',
+            'name' => 'required',
+            'last_name' => 'required',
+            'room_number' => 'required',
+            'code' => 'required',
+        ]);
+        try {
+            $data = $request->all();
+
+            Mail::to($request->contact_email)->send(new SendCodeMail($data));
+        } catch (Exception $error) {
+            return response(["error" => $error->getMessage()], 500);
+        }
+       
+        return response()->json(['message' => 'Correo enviado con exito.'], 200);
     }
 }
