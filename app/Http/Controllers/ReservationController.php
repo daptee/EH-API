@@ -85,8 +85,8 @@ class ReservationController extends Controller
             ];
 
             try {
-                // Mail::to('sl.larramendy@gmail.com')->send(new confirmReservationMailable($data));
-                Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
+                Mail::to('slarramendy@daptee.com.ar')->send(new confirmReservationMailable($data));
+                // Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
             } catch (Exception $error) {
                 Log::debug([
                     "message"=> "Proceso correcto. Error en envio de mail",
