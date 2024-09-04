@@ -185,4 +185,20 @@ class ReservationController extends Controller
 
         return response()->json(['message' => 'Reserva cancelada con exito.', 'reservation' => $reservation], 200);
     }
+
+    public function get_status_list()
+    {
+        $reservation_states = null;
+        try {
+            $reservation_states = ReservationStatus::all();
+        } catch (Exception $error) {
+            Log::debug([
+                "error al obtener listado de estados: " . $error->getMessage(),
+                "line: " . $error->getLine()
+            ]);
+            return response(["error" => $error->getMessage()], 500);
+        }
+
+        return response()->json(['reservation_states' => $reservation_states], 200);
+    }
 }
