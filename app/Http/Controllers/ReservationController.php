@@ -85,8 +85,8 @@ class ReservationController extends Controller
             ];
 
             try {
-                // Mail::to('sl.larramendy@gmail.com')->send(new confirmReservationMailable($data));
-                Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
+                Mail::to('slarramendy@daptee.com.ar')->send(new confirmReservationMailable($data));
+                // Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
             } catch (Exception $error) {
                 Log::debug([
                     "message"=> "Proceso correcto. Error en envio de mail",
@@ -184,5 +184,37 @@ class ReservationController extends Controller
         $reservation = Reservation::getAllReservation($reservation->id);
 
         return response()->json(['message' => 'Reserva cancelada con exito.', 'reservation' => $reservation], 200);
+    }
+
+    public function get_status_list()
+    {
+        $reservation_states = null;
+        try {
+            $reservation_states = ReservationStatus::all();
+        } catch (Exception $error) {
+            Log::debug([
+                "error al obtener listado de estados: " . $error->getMessage(),
+                "line: " . $error->getLine()
+            ]);
+            return response(["error" => $error->getMessage()], 500);
+        }
+
+        return response()->json(['reservation_states' => $reservation_states], 200);
+    }
+
+    public function by_reservation_number($reservation_number)
+    {
+        $reservation = null;
+        try {
+            $reservation = Reservation::with('status_history.status')->where('reservation_number', $reservation_number)->first();
+        } catch (Exception $error) {
+            Log::debug([
+                "error al obtener reserva: " . $error->getMessage(),
+                "line: " . $error->getLine()
+            ]);
+            return response(["error" => $error->getMessage()], 500);
+        }
+
+        return response()->json(['reservation' => $reservation], 200);
     }
 }
