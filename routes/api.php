@@ -45,6 +45,7 @@ Route::post('reservations/confirm', [ReservationController::class, 'confirm_rese
 Route::post('reservations/payment/rejection', [ReservationController::class, 'payment_rejection']);
 Route::post('reservations/cancel', [ReservationController::class, 'cancel_reservation']);
 Route::get('reservations/status/list', [ReservationController::class, 'get_status_list']);
+Route::get('reservations/by/reservation_number/{reservation_number}', [ReservationController::class, 'by_reservation_number']);
 
 // Form controller
 Route::post('form/contact', [FormController::class, 'form_contact']);

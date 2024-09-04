@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Reservation extends Model
@@ -15,6 +16,11 @@ class Reservation extends Model
     public function status(): HasOne
     {
         return $this->hasOne(ReservationStatus::class, 'id', 'status_id');
+    }
+
+    public function status_history(): HasMany
+    {
+        return $this->HasMany(ReservationStatusHistory::class, 'reservation_id', 'id');
     }
 
     public static function getAllReservation($id)

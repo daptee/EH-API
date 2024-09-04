@@ -201,4 +201,20 @@ class ReservationController extends Controller
 
         return response()->json(['reservation_states' => $reservation_states], 200);
     }
+
+    public function by_reservation_number($reservation_number)
+    {
+        $reservation = null;
+        try {
+            $reservation = Reservation::with('status_history.status')->where('reservation_number', $reservation_number)->first();
+        } catch (Exception $error) {
+            Log::debug([
+                "error al obtener reserva: " . $error->getMessage(),
+                "line: " . $error->getLine()
+            ]);
+            return response(["error" => $error->getMessage()], 500);
+        }
+
+        return response()->json(['reservation' => $reservation], 200);
+    }
 }
