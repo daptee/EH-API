@@ -41,6 +41,8 @@ class ReservationController extends Controller
             $reservation->reservation_number = $request->reservation_number;
             $reservation->status_id = ReservationStatus::INICIADA;
             $reservation->save();
+
+            ReservationStatusHistory::saveHistoryStatusReservation($reservation->id, ReservationStatus::INICIADA);
             
         } catch (Exception $error) {
             Log::debug("error al guardar reserva: " . $error->getMessage() . ' line: ' . $error->getLine());
