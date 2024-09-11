@@ -208,7 +208,7 @@ class ReservationController extends Controller
     {
         $reservation = null;
         try {
-            $reservation = Reservation::with('status_history.status')->where('reservation_number', $reservation_number)->first();
+            $reservation = Reservation::with(['status_history.status', 'rejected_history'])->where('reservation_number', $reservation_number)->first();
         } catch (Exception $error) {
             Log::debug([
                 "error al obtener reserva: " . $error->getMessage(),

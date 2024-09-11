@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EhBoutiqueController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\RoomController;
@@ -66,18 +67,24 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
 });
 
-Route::prefix('eh')->group(function () {
-    Route::controller(EhBoutiqueController::class)->group(function () {
-        Route::get('Naciones', 'Naciones');
-        Route::get('Tarifas', 'Tarifas');
-        Route::get('Disponibilidad', 'Disponibilidad');
-        Route::get('ReservaxCodigo', 'ReservaxCodigo');
-        Route::get('Articulos', 'Articulos');
-        Route::post('CancelaReserva', 'CancelaReserva');
-        Route::post('IniciaReserva', 'IniciaReserva');
-        Route::post('ConfirmaReserva', 'ConfirmaReserva');
-        Route::post('ConfirmaPasajeros', 'ConfirmaPasajeros');
-    });
+Route::prefix('internal-api-eh')->controller(InternalApiController::class)->group(function () {
+    Route::get('/Naciones', 'Naciones');
+    Route::get('/Tarifas', 'Tarifas');
+    Route::get('/Disponibilidad', 'Disponibilidad');
+    Route::get('/ReservaxCodigo', 'ReservaxCodigo');
+    Route::get('/PedidoxCodigo', 'PedidoxCodigo');
+    Route::get('/Articulos', 'Articulos');
+    Route::get('/Articulo', 'Articulo');
+    Route::get('/Rubros', 'Rubros');
+    Route::get('/ArticulosDestacados', 'ArticulosDestacados');
+    Route::get('/TiposDocumentos', 'TiposDocumentos');
+    Route::get('/Pedidos', 'Pedidos');
+    Route::get('/Habitaciones', 'Habitaciones');
+    Route::get('/Reservas', 'Reservas');
+    Route::post('/IniciaReserva', 'IniciaReserva');
+    Route::post('/CancelaReserva', 'CancelaReserva');
+    Route::post('/ConfirmaReserva', 'ConfirmaReserva');
+    Route::post('/ConfirmaPasajeros', 'ConfirmaPasajeros');
 });
 
 // Clear cache
