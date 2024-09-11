@@ -20,10 +20,29 @@ class InternalApiController extends Controller
             $client = new \GuzzleHttp\Client(['base_uri' => $url, 'verify' => false]);
 
             if (strtoupper($method) === 'POST') {
-                // $response = $client->post("/$endpoint", $params);
-                $response = $client->post("/$endpoint", [
-                    'form_params' => $params // Enviamos los parámetros en formato GET
+                $ch = curl_init();
+
+                curl_setopt($ch, CURLOPT_URL, "$url/$endpoint"); // URL de la API
+                curl_setopt($ch, CURLOPT_POST, 1); // Indicar que es una petición POST
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params)); // Pasar los datos a enviar
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Para recibir la respuesta como string
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Accept: application/json',
                 ]);
+
+                $response = curl_exec($ch);
+
+                if (curl_errno($ch)) {
+                    $error_msg = curl_error($ch);
+                    curl_close($ch);
+                    return response()->json(['error' => $error_msg], 500);
+                }
+
+                curl_close($ch);
+
+                return json_decode($response, true);
             } else {
                 $response = $client->get("/$endpoint", [
                     'query' => $params // Enviamos los parámetros en formato GET
@@ -127,21 +146,43 @@ class InternalApiController extends Controller
         ]);
     }
 
-    // public function IniciaReserva(Request $request)
-    // {
-    //     // dd($request->all());
-    //     return $this->fetchDataFromApi('IniciaReserva', $request->all(), 'POST');
-    // }
-
     public function IniciaReserva(Request $request)
     {
-        $url = $this->get_url();
-        $body_json = $request->all();
-        $response = Http::post("$url/IniciaReserva", $body_json);   
-        if ($response->successful()) {
-            return $response->json();
-        } else {
-            return $response->throw();
-        }
+        return $this->fetchDataFromApi('IniciaReserva', $request->all(), 'POST');
+    }
+
+    public function CancelaReserva(Request $request)
+    {
+        return $this->fetchDataFromApi('CancelaReserva', $request->all(), 'POST');
+    }
+
+    public function ConfirmaReserva(Request $request)
+    {
+        return $this->fetchDataFromApi('ConfirmaReserva', $request->all(), 'POST');
+    }
+
+    public function ConfirmaPasajeros(Request $request)
+    {
+        return $this->fetchDataFromApi('ConfirmaPasajeros', $request->all(), 'POST');
+    }
+
+    public function IniciaPedido(Request $request)
+    {
+        return $this->fetchDataFromApi('IniciaPedido', $request->all(), 'POST');
+    }
+
+    public function CancelaPedido(Request $request)
+    {
+        return $this->fetchDataFromApi('CancelaPedido', $request->all(), 'POST');
+    }
+
+    public function ConfirmaPedido(Request $request)
+    {
+        return $this->fetchDataFromApi('ConfirmaPedido', $request->all(), 'POST');
+    }
+
+    public function RealizaCheck(Request $request)
+    {
+        return $this->fetchDataFromApi('RealizaCheck', $request->all(), 'POST');
     }
 }

@@ -85,6 +85,10 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
     Route::post('/CancelaReserva', 'CancelaReserva');
     Route::post('/ConfirmaReserva', 'ConfirmaReserva');
     Route::post('/ConfirmaPasajeros', 'ConfirmaPasajeros');
+    Route::post('/IniciaPedido', 'IniciaPedido');
+    Route::post('/CancelaPedido', 'CancelaPedido');
+    Route::post('/ConfirmaPedido', 'ConfirmaPedido');
+    Route::post('/RealizaCheck', 'RealizaCheck');
 });
 
 // Clear cache
