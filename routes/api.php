@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\EhBoutiqueController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\NewsletterController;
@@ -37,6 +36,7 @@ Route::controller(UserController::class)->group(function () {
 
 Route::post('room/images', [RoomController::class, 'store']);
 Route::get('room/images/{room_id}', [RoomController::class, 'room_images']);
+Route::get('room/images', [RoomController::class, 'all_images_rooms']);
 Route::post('room/images/delete/{image_id}', [RoomController::class, 'room_images_delete']);
 Route::get('room/images_principal', [RoomController::class, 'room_images_principal']);
 

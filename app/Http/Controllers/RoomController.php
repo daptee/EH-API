@@ -91,6 +91,13 @@ class RoomController extends Controller
         return response()->json(['room_images' => $room_images], 200);
     }
 
+    public function all_images_rooms()
+    {
+        $rooms_images = $this->model::get();
+
+        return response()->json(['rooms_images' => $rooms_images], 200);
+    }    
+
     public function room_images_principal()
     {
         $room_images = $this->model::where('principal_image', 1)->get();
