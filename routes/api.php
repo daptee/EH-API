@@ -69,6 +69,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
 Route::prefix('internal-api-eh')->controller(InternalApiController::class)->group(function () {
     Route::get('/Naciones', 'Naciones');
+    Route::get('/Naciones2', 'Naciones2');
     Route::get('/Tarifas', 'Tarifas');
     Route::get('/Disponibilidad', 'Disponibilidad');
     Route::get('/ReservaxCodigo', 'ReservaxCodigo');

@@ -10,7 +10,7 @@ class InternalApiController extends Controller
     public function get_url()
     {
         $environment = config("app.environment");
-        return $environment === "DEV" ? "https://apieh.ehboutiqueexperience.com:8086" : "https://apieh.ehboutiqueexperience.com:8086";
+        return $environment === "DEV" ? "https://apieh.ehboutiqueexperience.com:8087" : "https://apieh.ehboutiqueexperience.com:8087";
     }
 
     public function fetchDataFromApi($endpoint, $params = [], $method = 'GET')
@@ -68,6 +68,16 @@ class InternalApiController extends Controller
     public function Naciones()
     {
         return $this->fetchDataFromApi('Naciones');
+    }
+
+    public function Naciones2()
+    {
+        $response = Http::get("https://apieh.ehboutiqueexperience.com:8087/Naciones");   
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return $response->throw();
+        }
     }
 
     public function Tarifas()
