@@ -72,7 +72,7 @@ class InternalApiController extends Controller
 
     public function Naciones()
     {
-        $response = Http::get("https://apieh.ehboutiqueexperience.com:35000/Naciones");   
+        $response = Http::get("https://apieh.ehboutiqueexperience.com:8087/Naciones");   
         if ($response->successful()) {
             return $response->json();
         } else {
