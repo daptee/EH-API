@@ -65,9 +65,19 @@ class InternalApiController extends Controller
 
 
     // Métodos con nombres iguales a los endpoints
+    // public function Naciones()
+    // {
+    //     return $this->fetchDataFromApi('Naciones');
+    // }
+
     public function Naciones()
     {
-        return $this->fetchDataFromApi('Naciones');
+        $response = Http::get("https://apieh.ehboutiqueexperience.com:35000/Naciones");   
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return $response->throw();
+        }
     }
 
     public function Naciones2()
