@@ -95,6 +95,15 @@ class InternalApiController extends Controller
         return $this->fetchDataFromApi('Tarifas');
     }
 
+    public function Calendario(Request $request)
+    {
+        return $this->fetchDataFromApi('Calendario', [
+            'FECHAD' => $request->FECHAD,
+            'FECHAH' => $request->FECHAH,
+            'HAB' => $request->HAB,
+        ]);
+    }
+
     public function Disponibilidad(Request $request)
     {
         return $this->fetchDataFromApi('Disponibilidad', [

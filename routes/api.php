@@ -82,6 +82,7 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
     Route::get('/Pedidos', 'Pedidos');
     Route::get('/Habitaciones', 'Habitaciones');
     Route::get('/Reservas', 'Reservas');
+    Route::get('/Calendario', 'Calendario');
     Route::post('/IniciaReserva', 'IniciaReserva');
     Route::post('/CancelaReserva', 'CancelaReserva');
     Route::post('/ConfirmaReserva', 'ConfirmaReserva');
