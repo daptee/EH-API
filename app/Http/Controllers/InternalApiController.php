@@ -156,10 +156,7 @@ class InternalApiController extends Controller
 
     public function Pedidos(Request $request)
     {
-        return $this->fetchDataFromApi('Pedidos', [
-            'FECHAD' => $request->FECHAD,
-            'FECHAH' => $request->FECHAH,
-        ]);
+        return $this->fetchDataFromApi('Pedidos', $request->all());
     }
 
     public function Habitaciones()
