@@ -13,11 +13,26 @@ class InternalApiController extends Controller
         return $environment === "DEV" ? "https://apieh.ehboutiqueexperience.com:8086" : "https://apieh.ehboutiqueexperience.com:8086";
     }
 
+    private function transformParams($params)
+    {
+        // Recorremos los parámetros y convertimos null o valores vacíos a cadena vacía
+        array_walk_recursive($params, function (&$value) {
+            if (is_null($value) || $value === '') {
+                $value = '';
+            }
+        });
+
+        return $params;
+    }
+
     public function fetchDataFromApi($endpoint, $params = [], $method = 'GET')
     {
         try {
             $url = $this->get_url();
             $client = new \GuzzleHttp\Client(['base_uri' => $url, 'verify' => false]);
+
+            // Transformar los parámetros antes de enviarlos
+            $params = $this->transformParams($params);
 
             if (strtoupper($method) === 'POST') {
                 $ch = curl_init();
