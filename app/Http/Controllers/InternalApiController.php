@@ -181,9 +181,12 @@ class InternalApiController extends Controller
 
     public function Reservas(Request $request)
     {
+        $fechah = $request->FECHAH ?: now()->format('d/m/Y');
+        $fechad = $request->FECHAD ?: now()->subDays(30)->format('d/m/Y');
+    
         return $this->fetchDataFromApi('Reservas', [
-            'FECHAD' => $request->FECHAD,
-            'FECHAH' => $request->FECHAH,
+            'FECHAD' => $fechad,
+            'FECHAH' => $fechah,
         ]);
     }
 
