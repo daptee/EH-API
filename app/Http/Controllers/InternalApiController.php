@@ -139,10 +139,7 @@ class InternalApiController extends Controller
 
     public function Articulos(Request $request)
     {
-        return $this->fetchDataFromApi('Articulos', [
-            'SECTOR' => $request->SECTOR,
-            'BUSQUEDA' => $request->BUSQUEDA,
-        ]);
+        return $this->fetchDataFromApi('Articulos', $request->all());
     }
 
     public function Articulo(Request $request)
