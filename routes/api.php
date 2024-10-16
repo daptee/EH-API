@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\EhBoutiqueController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\RoomController;
@@ -36,6 +36,7 @@ Route::controller(UserController::class)->group(function () {
 
 Route::post('room/images', [RoomController::class, 'store']);
 Route::get('room/images/{room_id}', [RoomController::class, 'room_images']);
+Route::get('room/images', [RoomController::class, 'all_images_rooms']);
 Route::post('room/images/delete/{image_id}', [RoomController::class, 'room_images_delete']);
 Route::get('room/images_principal', [RoomController::class, 'room_images_principal']);
 
@@ -66,18 +67,30 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
 });
 
-Route::prefix('eh')->group(function () {
-    Route::controller(EhBoutiqueController::class)->group(function () {
-        Route::get('Naciones', 'Naciones');
-        Route::get('Tarifas', 'Tarifas');
-        Route::get('Disponibilidad', 'Disponibilidad');
-        Route::get('ReservaxCodigo', 'ReservaxCodigo');
-        Route::get('Articulos', 'Articulos');
-        Route::post('CancelaReserva', 'CancelaReserva');
-        Route::post('IniciaReserva', 'IniciaReserva');
-        Route::post('ConfirmaReserva', 'ConfirmaReserva');
-        Route::post('ConfirmaPasajeros', 'ConfirmaPasajeros');
-    });
+Route::prefix('internal-api-eh')->controller(InternalApiController::class)->group(function () {
+    Route::get('/Naciones', 'Naciones');
+    Route::get('/Naciones2', 'Naciones2');
+    Route::get('/Tarifas', 'Tarifas');
+    Route::get('/Disponibilidad', 'Disponibilidad');
+    Route::get('/ReservaxCodigo', 'ReservaxCodigo');
+    Route::get('/PedidoxCodigo', 'PedidoxCodigo');
+    Route::get('/Articulos', 'Articulos');
+    Route::get('/Articulo', 'Articulo');
+    Route::get('/Rubros', 'Rubros');
+    Route::get('/ArticulosDestacados', 'ArticulosDestacados');
+    Route::get('/TiposDocumentos', 'TiposDocumentos');
+    Route::get('/Pedidos', 'Pedidos');
+    Route::get('/Habitaciones', 'Habitaciones');
+    Route::get('/Reservas', 'Reservas');
+    Route::get('/Calendario', 'Calendario');
+    Route::post('/IniciaReserva', 'IniciaReserva');
+    Route::post('/CancelaReserva', 'CancelaReserva');
+    Route::post('/ConfirmaReserva', 'ConfirmaReserva');
+    Route::post('/ConfirmaPasajeros', 'ConfirmaPasajeros');
+    Route::post('/IniciaPedido', 'IniciaPedido');
+    Route::post('/CancelaPedido', 'CancelaPedido');
+    Route::post('/ConfirmaPedido', 'ConfirmaPedido');
+    Route::post('/RealizaCheck', 'RealizaCheck');
 });
 
 // Clear cache

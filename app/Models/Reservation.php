@@ -23,6 +23,11 @@ class Reservation extends Model
         return $this->HasMany(ReservationStatusHistory::class, 'reservation_id', 'id');
     }
 
+    public function rejected_history(): HasMany
+    {
+        return $this->HasMany(RejectedReservation::class, 'reservation_id', 'id');
+    }
+
     public static function getAllReservation($id)
     {
         return Reservation::with('status')->find($id);

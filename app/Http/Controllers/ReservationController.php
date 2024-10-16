@@ -41,6 +41,8 @@ class ReservationController extends Controller
             $reservation->reservation_number = $request->reservation_number;
             $reservation->status_id = ReservationStatus::INICIADA;
             $reservation->save();
+
+            ReservationStatusHistory::saveHistoryStatusReservation($reservation->id, ReservationStatus::INICIADA);
             
         } catch (Exception $error) {
             Log::debug("error al guardar reserva: " . $error->getMessage() . ' line: ' . $error->getLine());
@@ -206,7 +208,7 @@ class ReservationController extends Controller
     {
         $reservation = null;
         try {
-            $reservation = Reservation::with('status_history.status')->where('reservation_number', $reservation_number)->first();
+            $reservation = Reservation::with(['status_history.status', 'rejected_history'])->where('reservation_number', $reservation_number)->first();
         } catch (Exception $error) {
             Log::debug([
                 "error al obtener reserva: " . $error->getMessage(),
