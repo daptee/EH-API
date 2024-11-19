@@ -10,7 +10,7 @@ class InternalApiController extends Controller
     public function get_url()
     {
         $environment = config("app.environment");
-        return $environment === "DEV" ? "https://apieh.ehboutiqueexperience.com:8086" : "https://apieh.ehboutiqueexperience.com:8086";
+        return $environment === "DEV" ? "https://apieh.ehboutiqueexperience.com:9096" : "https://apieh.ehboutiqueexperience.com:8086";
     }
 
     private function transformParams($params)
