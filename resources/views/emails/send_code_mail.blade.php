@@ -8,17 +8,21 @@
 </head>
 <body>
     <p>
-        Hola {{ $data['name'] }}. <br>
+        Buenas tardes {{ $data['name'] . ' ' . $data['last_name'] }}, <br>
         <br>
-        Te informamos que el codigo para ingresar a la habitacion numero {{ $data['room_number'] }} es: <br>
+        Le informamos que el código para ingresar a su SUITE {{ $data['suite_name'] ?? $data['room_number'] }} es: <br>
         <br>
         <strong style="display: block; text-align: center; font-size: 1.2em;">{{ $data['code'] }}</strong> <br>
         <br>
-        Esto corresponde a su reserva nro: {{ $data['reservation_number'] }}. <br>
+        Esto corresponde a su reserva num: {{ $data['reservation_number'] }}. <br>
         <br>
-        Ante cualquier duda, comuniquese al +54 9 2966 38-5468 <br>
-        Muchas gracias. <br>
-        El equipo de EH boutique experience.
+        Muchas gracias por elegirnos! <br>
+        <br>
+        No dude en contactarse con nosotros en caso de necesitarlo al +54 9 2966 38-5468 <br>
+        <br>
+        Estamos a disposición para lo que necesite. <br>
+        <br>
+        Equipo EHBE.
     </p>
 </body>
 </html>

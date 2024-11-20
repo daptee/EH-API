@@ -12,7 +12,7 @@ class SendCodeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $data;
+    public $data, $suite_name_number;
     /**
      * Create a new message instance.
      *
@@ -21,6 +21,7 @@ class SendCodeMail extends Mailable
     public function __construct($data)
     {
         $this->data = $data;
+        $this->suite_name_number = $data['suite_name'] ?? $data['room_number'];
     }
 
     /**
@@ -31,7 +32,7 @@ class SendCodeMail extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'EH Boutique experience - Código ingreso',
+            subject: "EH Boutique Experience - Código ingreso SUITE " . $this->suite_name_number,
         );
     }
 
