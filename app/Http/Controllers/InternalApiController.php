@@ -226,4 +226,9 @@ class InternalApiController extends Controller
     {
         return $this->fetchDataFromApi('RealizaCheck', $request->all(), 'POST');
     }
+
+    public function ReservaxOExterna(Request $request)
+    {
+        return $this->fetchDataFromApi('ReservaxOExterna', $request->all());
+    }
 }
