@@ -92,6 +92,7 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
     Route::post('/ConfirmaPedido', 'ConfirmaPedido');
     Route::post('/RealizaCheck', 'RealizaCheck');
     Route::get('/ReservaxOExterna', 'ReservaxOExterna');
+    Route::get('/ReservaActiva', 'ReservaActiva');
 });
 
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);

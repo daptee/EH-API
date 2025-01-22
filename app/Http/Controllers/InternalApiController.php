@@ -231,4 +231,9 @@ class InternalApiController extends Controller
     {
         return $this->fetchDataFromApi('ReservaxOExterna', $request->all());
     }
+
+    public function ReservaActiva(Request $request)
+    {
+        return $this->fetchDataFromApi('ReservaActiva', $request->all());
+    }
 }
