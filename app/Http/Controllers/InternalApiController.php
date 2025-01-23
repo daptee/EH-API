@@ -57,7 +57,14 @@ class InternalApiController extends Controller
 
                 curl_close($ch);
 
-                return json_decode($response, true);
+                $decodedResponse = json_decode($response, true);
+
+                // Verificar si el resultado indica error
+                if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
+                    return response()->json($decodedResponse, 400);
+                }
+
+                return $decodedResponse;
             } else {
                 $response = $client->get("/$endpoint", [
                     'query' => $params // Enviamos los parámetros en formato GET
@@ -65,7 +72,14 @@ class InternalApiController extends Controller
             }
 
             if ($response->getStatusCode() == 200) {
-                return json_decode($response->getBody()->getContents());
+                $decodedResponse = json_decode($response->getBody()->getContents(), true);
+
+                // Verificar si el resultado indica error
+                if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
+                    return response()->json($decodedResponse, 400);
+                }
+    
+                return $decodedResponse;
             } else {
                 return $response->getBody()->getContents();
             }
@@ -225,5 +239,15 @@ class InternalApiController extends Controller
     public function RealizaCheck(Request $request)
     {
         return $this->fetchDataFromApi('RealizaCheck', $request->all(), 'POST');
+    }
+
+    public function ReservaxOExterna(Request $request)
+    {
+        return $this->fetchDataFromApi('ReservaxOExterna', $request->all());
+    }
+
+    public function ReservaActiva(Request $request)
+    {
+        return $this->fetchDataFromApi('ReservaActiva', $request->all());
     }
 }
