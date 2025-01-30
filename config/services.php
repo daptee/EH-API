@@ -39,5 +39,7 @@ return [
 
     'front_end' => [
         'url' => env('FRONTEND_URL')
-    ]
+    ],
+
+    'mail_to_contact' => env('MAIL_TO_CONTACT')
 ];
