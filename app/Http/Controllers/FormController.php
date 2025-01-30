@@ -21,7 +21,8 @@ class FormController extends Controller
         $data = $request->all();
      
         try {
-            Mail::to("slarramendy@daptee.com.ar")->send(new FormContact($data));                        
+            $mail_to = config('services.mail_to_contact');
+            Mail::to($mail_to)->send(new FormContact($data));                        
         } catch (Exception $error) {
             Log::debug(print_r(["message" => $error->getMessage() . " error en envio de mail de contacto", $error->getLine()],  true));
         }
