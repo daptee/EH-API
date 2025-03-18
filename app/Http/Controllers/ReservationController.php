@@ -22,8 +22,8 @@ class ReservationController extends Controller
     public $s = "usuario";
     public $sp = "usuarios";
     public $ss = "usuario/s";
-    public $v = "o"; 
-    public $pr = "el"; 
+    public $v = "o";
+    public $pr = "el";
     public $prp = "los";
 
     public function store(Request $request)
@@ -33,9 +33,9 @@ class ReservationController extends Controller
         ]);
 
         $reservation = Reservation::where('reservation_number', $request->reservation_number)->first();
-        if($reservation)
+        if ($reservation)
             return response()->json(['message' => 'Reserva ya existente.'], 400);
-        
+
         try {
             $reservation = new Reservation();
             $reservation->reservation_number = $request->reservation_number;
@@ -43,12 +43,11 @@ class ReservationController extends Controller
             $reservation->save();
 
             ReservationStatusHistory::saveHistoryStatusReservation($reservation->id, ReservationStatus::INICIADA);
-            
         } catch (Exception $error) {
             Log::debug("error al guardar reserva: " . $error->getMessage() . ' line: ' . $error->getLine());
             return response(["error" => $error->getMessage()], 500);
         }
-       
+
         $reservation = Reservation::getAllReservation($reservation->id);
 
         return response()->json(['message' => 'Reserva guardada con exito.', 'reservation' => $reservation], 200);
@@ -64,17 +63,16 @@ class ReservationController extends Controller
         $reservation = Reservation::find($request->reservation_id);
 
         try {
-            DB::transaction(function () use($request, $reservation) {
+            DB::transaction(function () use ($request, $reservation) {
 
                 $status_id = ReservationStatus::CONFIRMADA;
-                
+
                 // Actualizamos estado en reserva
                 $reservation->status_id = $status_id;
                 $reservation->save();
 
                 // Almacenamos historial de estado en reserva
                 ReservationStatusHistory::saveHistoryStatusReservation($request->reservation_id, $status_id);
-                
             });
             $data = [
                 'reservation_number' => $reservation->reservation_number,
@@ -87,11 +85,11 @@ class ReservationController extends Controller
             ];
 
             try {
-                Mail::to('slarramendy@daptee.com.ar')->send(new confirmReservationMailable($data));
+                Mail::to(config('mail.confirmation_email'))->send(new confirmReservationMailable($data));
                 // Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
             } catch (Exception $error) {
                 Log::debug([
-                    "message"=> "Proceso correcto. Error en envio de mail",
+                    "message" => "Proceso correcto. Error en envio de mail",
                     "line" => $error->getLine(),
                     "error" => $error->getMessage(),
                 ]);
@@ -126,7 +124,7 @@ class ReservationController extends Controller
         $reservation = Reservation::find($request->reservation_id);
 
         try {
-            DB::transaction(function () use($request, $reservation) {
+            DB::transaction(function () use ($request, $reservation) {
 
                 $status_id = ReservationStatus::RECHAZADA;
 
@@ -136,7 +134,7 @@ class ReservationController extends Controller
 
                 // Almacenamos razon del rechazo en reserva
                 RejectedReservation::saveReasonRejection($request->reservation_id, $request->reason_rejection);
-                
+
                 // Almacenamos historial de estado en reserva
                 ReservationStatusHistory::saveHistoryStatusReservation($request->reservation_id, $status_id);
             });
@@ -163,7 +161,7 @@ class ReservationController extends Controller
         $reservation = Reservation::find($request->reservation_id);
 
         try {
-            DB::transaction(function () use($request, $reservation) {
+            DB::transaction(function () use ($request, $reservation) {
 
                 $status_id = ReservationStatus::CANCELADA;
 

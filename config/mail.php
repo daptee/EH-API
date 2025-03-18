@@ -107,6 +107,8 @@ return [
     |
     */
 
+    'confirmation_email' => env('CONFIRMATION_EMAIL', 'reservas@ehboutiqueexperience.com'),
+
     'markdown' => [
         'theme' => 'default',
 

@@ -59,7 +59,7 @@ Route::post('send/code/email', [UserController::class, 'send_code_email']);
 
 Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
-    
+
     // User Controller
     // Route::post('users/update', [UserController::class, 'update']);
     // Route::get('users/{id}', [UserController::class, 'show']);
@@ -98,7 +98,7 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);
 
 // Clear cache
-Route::get('/clear-cache', function() {
+Route::get('/clear-cache', function () {
     Artisan::call('config:clear');
     Artisan::call('optimize');
 
@@ -107,9 +107,9 @@ Route::get('/clear-cache', function() {
     ]);
 });
 
-Route::get('test-mail', function() {
+Route::get('test-mail', function () {
     try {
-        $text = "Test de envio de mail Hielo y Aventura";
+        $text = "Test de envio de mail EH";
         Mail::to("slarramendy@daptee.com.ar")->send(new TestMail("slarramendy@daptee.com.ar", $text));
         return 'Mail enviado';
     } catch (\Throwable $th) {
