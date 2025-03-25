@@ -5,8 +5,10 @@ namespace App\Console\Commands;
 use App\Models\AuditReservation;
 use App\Models\Reservation;
 use App\Models\ReservationStatus;
+use App\Models\ReservationStatusHistory;
 use App\Models\UserReservation;
 use App\Models\UserReservationStatusHistory;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -28,6 +30,71 @@ class CancelarReservas extends Command
      */
     protected $description = 'Este comando se encarga de cancelar reservas que quedaron pendientes (perdidas)';
 
+    public function get_url()
+    {
+        $environment = config("app.environment");
+        return $environment === "DEV" ? "https://apieh.ehboutiqueexperience.com:9096" : "https://apieh.ehboutiqueexperience.com:8086";
+    }
+
+    private function transform_params($params)
+    {
+        // Recorremos los parámetros y convertimos null o valores vacíos a cadena vacía
+        array_walk_recursive($params, function (&$value) {
+            if (is_null($value) || $value === '') {
+                $value = '';
+            }
+        });
+
+        return $params;
+    }
+
+    public function cancel_reservation($params = [])
+    {
+        try {
+            $url = $this->get_url();
+
+            // Transformar los parámetros antes de enviarlos
+            $params = $this->transform_params($params);
+
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, "$url/CancelaReserva"); // URL de la API
+            curl_setopt($ch, CURLOPT_POST, 1); // Indicar que es una petición POST
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params)); // Pasar los datos a enviar
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Para recibir la respuesta como string
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Accept: application/json',
+            ]);
+
+            $response = curl_exec($ch);
+
+            if (curl_errno($ch)) {
+                $error_msg = curl_error($ch);
+                curl_close($ch);
+                Log::debug(["error_response_cancels_reservation" => $error_msg]);
+                return ['status' => 500, 'error' => $error_msg];
+            }
+
+            curl_close($ch);
+
+            $decodedResponse = json_decode($response, true);
+
+            // Verificar si el resultado indica error
+            if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
+                Log::debug(["error_response_cancels_reservation" => $decodedResponse]);
+                return ['status' => 400, 'error' => $decodedResponse];
+            }
+
+            return ['status' => 200, 'decodedResponse' => $decodedResponse];
+
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            Log::debug(["error_response_cancels_reservation" => $e->getMessage()]);
+            return ['status' => 500, 'error' => $e->getMessage()];
+        }
+    }
+
     /**
      * Execute the console command.
      *
@@ -44,8 +111,28 @@ class CancelarReservas extends Command
 
         if(count($reservations) > 0){
             foreach($reservations as $reservation){
-                $reservation->status_id = ReservationStatus::CANCELADO_AUTOMATICO;
-                $reservation->save();
+
+                $params = [
+                    "RSV" => $reservation->reservation_number
+                ];
+                $response = $this->cancel_reservation($params);
+
+                Log::debug("Numero de reserva: $reservation->reservation_number , Resultado API: $response");
+                
+                if($response['status'] == 200){
+                    try {
+                        $status_id = ReservationStatus::CANCELADO_AUTOMATICO;
+
+                        $reservation->status_id = $status_id;
+                        $reservation->save();
+    
+                        ReservationStatusHistory::saveHistoryStatusReservation($reservation->id, $status_id);
+                        Log::debug("Numero de reserva: $reservation->reservation_number , Resultado: Reserva cancelada con exito.");                       
+                    } catch (Exception $e) {
+                        $error = $e->getMessage();
+                        Log::debug("Numero de reserva: $reservation->reservation_number , Resultado: Error al cancelar reserva, Message: $error");                       
+                    }
+                }
             }
         }
     }
