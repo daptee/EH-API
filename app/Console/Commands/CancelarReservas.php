@@ -115,7 +115,8 @@ class CancelarReservas extends Command
                 $params = [
                     "RSV" => $reservation->reservation_number
                 ];
-                $response = $this->cancel_reservation($params);
+                
+                $response = json_encode($this->cancel_reservation($params));
 
                 Log::debug("Numero de reserva: $reservation->reservation_number , Resultado API: $response");
                 
