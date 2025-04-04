@@ -107,8 +107,6 @@ return [
     |
     */
 
-    'confirmation_email' => env('CONFIRMATION_EMAIL', 'backup@example.com'),
-
     'markdown' => [
         'theme' => 'default',
 
