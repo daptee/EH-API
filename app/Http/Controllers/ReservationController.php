@@ -85,11 +85,20 @@ class ReservationController extends Controller
             ];
 
             try {
-                Mail::to(config('mail.confirmation_email'))->send(new confirmReservationMailable($data));
-                // Mail::to('enzo100amarilla@gmail.com')->send(new confirmReservationMailable($data));
+                Mail::to(config('services.confirmation_email'))->send(new confirmReservationMailable($data, "interno")); // para interno
             } catch (Exception $error) {
                 Log::debug([
-                    "message" => "Proceso correcto. Error en envio de mail",
+                    "message" => "Proceso correcto. Error en envio de mail interno",
+                    "line" => $error->getLine(),
+                    "error" => $error->getMessage(),
+                ]);
+            }
+
+            try {
+                Mail::to($request->user['email'])->send(new confirmReservationMailable($data, "cliente")); // para cliente
+            } catch (Exception $error) {
+                Log::debug([
+                    "message" => "Proceso correcto. Error en envio de mail a cliente",
                     "line" => $error->getLine(),
                     "error" => $error->getMessage(),
                 ]);
