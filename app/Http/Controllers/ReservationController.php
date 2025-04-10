@@ -76,12 +76,14 @@ class ReservationController extends Controller
             });
             $data = [
                 'reservation_number' => $reservation->reservation_number,
+                'room_number' => $request->room_number,
                 'name' => $request->user['name'],
                 'last_name' => $request->user['last_name'],
                 'check_in' => $request->user['check_in'],
                 'check_out' => $request->user['check_out'],
                 'number_of_passengers' => $request->number_of_passengers,
                 'email' => $request->user['email'],
+                'phone' => $request->user['phone'],
             ];
 
             try {
