@@ -21,12 +21,14 @@
         Check-out: {{ $data['check_out'] }} <br>
         Cantidad de pasajeros: {{ $data['number_of_passengers'] }} <br>
         Nro de habitación: {{ $data['room_number'] }} <br>
-        Datos de contacto: {{ $data['name'] }} - {{ $data['email'] }} - {{ $data['phone'] }} <br> <br>
 
         @if($type == "cliente")
+        <br>
         Recorda cuando llegues hacer el checkin virtual en el Totem que encontrarás en el hotel. <br>
+        Ante cualquier problema, podes contactarte con nosotros al WhatsApp: +54 9 2966 753463 o a nuestro correo electrónico info@ehboutiqueexperience.com. <br>
         Muchas gracias y buena estadía!
         @else
+        Datos de contacto: {{ $data['name'] }} {{ $data['last_name'] }} - {{ $data['email'] }} - {{ $data['phone'] }} <br> <br>
         Muchas gracias <br>
         El equipo IT de EH Boutique Experience.
         @endif
