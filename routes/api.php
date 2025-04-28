@@ -57,6 +57,9 @@ Route::post('newsletter/register/email', [NewsletterController::class, 'newslett
 // Mail send code
 Route::post('send/code/email', [UserController::class, 'send_code_email']);
 
+// Mail matriz design
+Route::post('matriz-design/send-form', [FormController::class, 'matriz_design']);
+
 Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     

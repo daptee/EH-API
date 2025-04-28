@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\FormContact;
+use App\Mail\MatrizDesign;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -28,5 +29,18 @@ class FormController extends Controller
         }
 
         return response()->json(['message' => 'Contacto enviado con exito.']);
+    }
+
+    public function matriz_design(Request $request)
+    {
+        $data = $request->all();
+     
+        try {
+            Mail::to("enzo100amarilla@gmail.com")->send(new MatrizDesign($data));                        
+        } catch (Exception $error) {
+            Log::debug(print_r(["message" => $error->getMessage() . " error en envio de mail matriz design", $error->getLine()],  true));
+        }
+
+        return response()->json(['message' => 'Mail matriz-design enviado con exito.']);
     }
 }
