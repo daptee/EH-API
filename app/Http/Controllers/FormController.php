@@ -39,6 +39,7 @@ class FormController extends Controller
             Mail::to("enzo100amarilla@gmail.com")->send(new MatrizDesign($data));                        
         } catch (Exception $error) {
             Log::debug(print_r(["message" => $error->getMessage() . " error en envio de mail matriz design", $error->getLine()],  true));
+            return response()->json(["message" => "Error en envio de mail matriz design: ".$error->getMessage()]);
         }
 
         return response()->json(['message' => 'Mail matriz-design enviado con exito.']);
