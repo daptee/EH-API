@@ -139,17 +139,25 @@ class ObtenerReservasPxSol extends Command
 
         $url = $this->get_url();
         foreach ($payloads as $payload) {
-            $response = Http::post("$url/IniciaReservaPX", $payload);
+            // $response = Http::post("$url/IniciaReservaPX", $payload);
+            $response = $this->fetchDataFromApi('IniciaReservaPX', $payload, 'POST');
+            Log::debug([
+                "bookingId" => $bookingId,
+                "payload" => $payload,
+                "response" => $response,
+                "message" => "Orden procesada",
+            ]);
+            dd($response, $payload, $bookingId, "Una orden procesada");
 
-            if ($response->successful()) {
-                $this->info("✅ Reserva enviada correctamente para ID $bookingId");
-                Log::debug("Orden procesada, bookingId: $bookingId");
-                dd($response->json(), $bookingId, "Una orden procesada");
-            } else {
-                Log::debug("Error al procesar orden, bookingId: $bookingId");
-                $this->error("❌ Error al enviar reserva ID $bookingId: " . $response->body());
-                dd($response->json(), $bookingId, "Error al procesar orden");
-            }
+            // if ($response->successful()) {
+            //     $this->info("✅ Reserva enviada correctamente para ID $bookingId");
+            //     Log::debug("Orden procesada, bookingId: $bookingId");
+            //     dd($response->json(), $bookingId, "Una orden procesada");
+            // } else {
+            //     Log::debug("Error al procesar orden, bookingId: $bookingId");
+            //     $this->error("❌ Error al enviar reserva ID $bookingId: " . $response->body());
+            //     dd($response->json(), $bookingId, "Error al procesar orden");
+            // }
         }
     }
 
@@ -158,5 +166,84 @@ class ObtenerReservasPxSol extends Command
         return str_ends_with($medio, '.com')
             ? ucfirst(str_replace('.com', '', $medio))
             : ucfirst($medio);
+    }
+
+    public function fetchDataFromApi($endpoint, $params = [], $method = 'GET')
+    {
+        try {
+            $url = $this->get_url();
+            $client = new \GuzzleHttp\Client(['base_uri' => $url, 'verify' => false]);
+
+            // Transformar los parámetros antes de enviarlos
+            $params = $this->transformParams($params);
+
+            if (strtoupper($method) === 'POST') {
+                $ch = curl_init();
+
+                curl_setopt($ch, CURLOPT_URL, "$url/$endpoint"); // URL de la API
+                curl_setopt($ch, CURLOPT_POST, 1); // Indicar que es una petición POST
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params)); // Pasar los datos a enviar
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Para recibir la respuesta como string
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                ]);
+
+                $response = curl_exec($ch);
+
+                if (curl_errno($ch)) {
+                    $error_msg = curl_error($ch);
+                    curl_close($ch);
+                    return response()->json(['error' => $error_msg], 500);
+                }
+
+                curl_close($ch);
+
+                $decodedResponse = json_decode($response, true);
+
+                // Verificar si el resultado indica error
+                if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
+                    return response()->json($decodedResponse, 400);
+                }
+
+                return $decodedResponse;
+            } else {
+                $response = $client->get("/$endpoint", [
+                    'query' => $params // Enviamos los parámetros en formato GET
+                ]);
+            }
+
+            if ($response->getStatusCode() == 200) {
+                $decodedResponse = json_decode($response->getBody()->getContents(), true);
+
+                // Verificar si el resultado indica error
+                if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
+                    return response()->json($decodedResponse, 400);
+                }
+    
+                return $decodedResponse;
+            } else {
+                return $response->getBody()->getContents();
+            }
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            // Retornamos un mensaje de error más claro
+            return response()->json([
+                'error' => 'Error al conectar con la API',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function transformParams($params)
+    {
+        // Recorremos los parámetros y convertimos null o valores vacíos a cadena vacía
+        array_walk_recursive($params, function (&$value) {
+            if (is_null($value) || $value === '') {
+                $value = '';
+            }
+        });
+
+        return $params;
     }
 }
