@@ -43,4 +43,5 @@ return [
 
     'mail_to_contact' => env('MAIL_TO_CONTACT'),
     'confirmation_email' => env('CONFIRMATION_EMAIL'),
+    'pxsol_api_key_token' => env('PXSOL_API_TOKEN')
 ];
