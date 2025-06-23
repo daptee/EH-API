@@ -90,7 +90,6 @@ class ObtenerReservasPxSol extends Command
         $medio = $detail['attributes']['medio'] ?? null;
 
         $platform = ($way === 'OTA') ? $this->cleanPlatform($medio) : null;
-        $origenWeb = ($way === 'OTA') ? 'WEB' : null;
 
         $array_rooms = [
             '135365' => 4,
@@ -131,7 +130,7 @@ class ObtenerReservasPxSol extends Command
                 "DNICUIT" => null,
                 "DNICUIT_TIPO" => null,
                 "FECHA_NACIMIENTO" => $guests['birthdate'] ?? null,
-                "ORIGEN_WEB" => $origenWeb,
+                "ORIGEN_WEB" => "PXSOL",
                 "PLATAFORMA_EXTERNA" => $platform,
                 "ORDEN_EXTERNA" => null,
             ];
