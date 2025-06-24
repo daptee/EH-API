@@ -29,15 +29,64 @@ class ObtenerReservasPxSol extends Command
                 continue;
             }
 
-            // $payloads[] = [
-                $this->mapToInternalFormat($booking, $detail);
-            // ];
+            $checkin = \Carbon\Carbon::parse($booking['check_in'])->format('d/m/Y');
+            $checkout = \Carbon\Carbon::parse($booking['check_out'])->format('d/m/Y');
+            $bookingId = $booking['booking_id'];
+
+            $rooms = $detail['relationships']['rooms']['data'] ?? [];
+            $guests = $detail['relationships']['guests']['data']['attributes'][0] ?? [];
+            $guestDetails = $booking['guest_details'] ?? [];
+            $way = $detail['attributes']['way'] ?? null;
+            $medio = $detail['attributes']['medio'] ?? null;
+
+            $platform = ($way === 'OTA') ? $this->cleanPlatform($medio) : null;
+
+            $array_rooms = [
+                '135365' => 4,
+                '135364' => 3,
+                '115361' => 1,
+                '135366' => 5,
+                '135348' => 2,
+                '135367' => 6,
+                '135368' => 7,
+            ];
+
+            foreach ($rooms as $room) {
+                $adults = (int) $room['adults'] ?? 0;
+                $children = (int) $room['children'] ?? 0;
+                $babies = (int) $room['babies'] ?? 0;
+                $cuantos = $adults + $children + $babies;
+                $room_id = $room['room_id'];
+                
+                $payloads[] = [
+                    "DESDE" => $checkin,
+                    "HASTA" => $checkout,
+                    "HAB" =>  $array_rooms[$room_id] ?? null, // Completar si aplica mapping de habitación
+                    "CUANTOS" => $cuantos,
+                    "RESERVA_PXSOL" => $bookingId,
+                    "PAX" => trim(($guestDetails['name'] ?? '') . ' ' . ($guestDetails['last_name'] ?? '')),
+                    "TELEFONO_CONTACTO" => $guests['phone'] ?? '',
+                    "EMAIL_CONTACTO" => $guestDetails['email'] ?? '',
+                    "EMAIL_NOTIFICACIONES" => $guestDetails['email'] ?? '',
+                    "VOL_ORDEN" => null,
+                    "IMPORTE_COBRADO" => number_format((float) $detail['attributes']['subtotal'], 2, ',', ''),
+                    "IMPORTE_ADICIONAL" => $detail['attributes']['taxes'],
+                    "TRANSACCION_NRO" => null,
+                    "FAC_A_CUIT" => null,
+                    "FAC_A_RSOCIAL" => null,
+                    "FAC_A_SFISCAL" => null,
+                    "DNICUIT" => null,
+                    "DNICUIT_TIPO" => null,
+                    "FECHA_NACIMIENTO" => $guests['birthdate'] ?? null,
+                    "ORIGEN_WEB" => "PXSOL",
+                    "PLATAFORMA_EXTERNA" => $platform,
+                    "ORDEN_EXTERNA" => null,
+                ];
+            }
         }
 
-        // dd(count($payloads), $payloads);
-        // $response = $this->fetchDataFromApi('IniciaReservaPX', $payloads, 'POST');
-        // dd($response, $payloads, $bookingId, "Ordenes procesadas");
-
+        Log::debug($payloads);
+        $this->fetchDataFromApi('IniciaReservaPX', $payloads, 'POST');
         $this->info('✅ Sincronización finalizada.');
     }
 
@@ -85,83 +134,6 @@ class ObtenerReservasPxSol extends Command
         return null;
     }
 
-    protected function mapToInternalFormat($booking, $detail)
-    {
-        $checkin = \Carbon\Carbon::parse($booking['check_in'])->format('d/m/Y');
-        $checkout = \Carbon\Carbon::parse($booking['check_out'])->format('d/m/Y');
-        $bookingId = $booking['booking_id'];
-
-        $rooms = $detail['relationships']['rooms']['data'] ?? [];
-        $guests = $detail['relationships']['guests']['data']['attributes'][0] ?? [];
-        $guestDetails = $booking['guest_details'] ?? [];
-        $way = $detail['attributes']['way'] ?? null;
-        $medio = $detail['attributes']['medio'] ?? null;
-
-        $platform = ($way === 'OTA') ? $this->cleanPlatform($medio) : null;
-
-        $array_rooms = [
-            '135365' => 4,
-            '135364' => 3,
-            '115361' => 1,
-            '135366' => 5,
-            '135348' => 2,
-            '135367' => 6,
-            '135368' => 7,
-        ];
-
-        $payloads = [];
-
-        foreach ($rooms as $room) {
-            $adults = (int) $room['adults'] ?? 0;
-            $children = (int) $room['children'] ?? 0;
-            $babies = (int) $room['babies'] ?? 0;
-            $cuantos = $adults + $children + $babies;
-            $room_id = $room['room_id'];
-            
-            $payloads[] = [
-                "DESDE" => $checkin,
-                "HASTA" => $checkout,
-                "HAB" =>  $array_rooms[$room_id] ?? null, // Completar si aplica mapping de habitación
-                "CUANTOS" => $cuantos,
-                "RESERVA_PXSOL" => $bookingId,
-                "PAX" => trim(($guestDetails['name'] ?? '') . ' ' . ($guestDetails['last_name'] ?? '')),
-                "TELEFONO_CONTACTO" => $guests['phone'] ?? '',
-                "EMAIL_CONTACTO" => $guestDetails['email'] ?? '',
-                "EMAIL_NOTIFICACIONES" => $guestDetails['email'] ?? '',
-                "VOL_ORDEN" => null,
-                "IMPORTE_COBRADO" => $detail['attributes']['subtotal'],
-                "IMPORTE_ADICIONAL" => $detail['attributes']['taxes'],
-                "TRANSACCION_NRO" => null,
-                "FAC_A_CUIT" => null,
-                "FAC_A_RSOCIAL" => null,
-                "FAC_A_SFISCAL" => null,
-                "DNICUIT" => null,
-                "DNICUIT_TIPO" => null,
-                "FECHA_NACIMIENTO" => $guests['birthdate'] ?? null,
-                "ORIGEN_WEB" => "PXSOL",
-                "PLATAFORMA_EXTERNA" => $platform,
-                "ORDEN_EXTERNA" => null,
-            ];
-        }
-
-        $response = $this->fetchDataFromApi('IniciaReservaPX', $payloads, 'POST');
-        return $response;
-        // foreach ($payloads as $payload) {
-            // $response = Http::post("$url/IniciaReservaPX", $payload);
- 
-
-            // if ($response->successful()) {
-            //     $this->info("✅ Reserva enviada correctamente para ID $bookingId");
-            //     Log::debug("Orden procesada, bookingId: $bookingId");
-            //     dd($response->json(), $bookingId, "Una orden procesada");
-            // } else {
-            //     Log::debug("Error al procesar orden, bookingId: $bookingId");
-            //     $this->error("❌ Error al enviar reserva ID $bookingId: " . $response->body());
-            //     dd($response->json(), $bookingId, "Error al procesar orden");
-            // }
-        // }
-    }
-
     protected function cleanPlatform($medio)
     {
         return str_ends_with($medio, '.com')
@@ -205,9 +177,9 @@ class ObtenerReservasPxSol extends Command
                 curl_close($ch);
 
                 $decodedResponse = json_decode($response, true);
-                    Log::debug([
-                        "response" => $decodedResponse,
-                    ]);
+                Log::debug([
+                    "response" => $decodedResponse,
+                ]);
 
                 // Verificar si el resultado indica error
                 if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
