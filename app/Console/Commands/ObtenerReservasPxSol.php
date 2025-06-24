@@ -70,7 +70,7 @@ class ObtenerReservasPxSol extends Command
                     "EMAIL_NOTIFICACIONES" => $guestDetails['email'] ?? '',
                     "VOL_ORDEN" => null,
                     "IMPORTE_COBRADO" => number_format((float) $detail['attributes']['subtotal'], 2, ',', ''),
-                    "IMPORTE_ADICIONAL" => $detail['attributes']['taxes'],
+                    "IMPORTE_ADICIONAL" => number_format((float) $detail['attributes']['taxes'], 2, ',', ''),
                     "TRANSACCION_NRO" => null,
                     "FAC_A_CUIT" => null,
                     "FAC_A_RSOCIAL" => null,
