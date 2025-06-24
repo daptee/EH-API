@@ -16,6 +16,8 @@ class ObtenerReservasPxSol extends Command
         $this->info('Iniciando sincronización de reservas...');
         $bookings = $this->fetchAllBookings();
 
+        $payloads = [];
+
         foreach ($bookings as $booking) {
             $bookingId = $booking['booking_id'];
             $this->info("Procesando booking_id: $bookingId");
@@ -27,8 +29,14 @@ class ObtenerReservasPxSol extends Command
                 continue;
             }
 
-            $payload = $this->mapToInternalFormat($booking, $detail);
+            // $payloads[] = [
+                $this->mapToInternalFormat($booking, $detail);
+            // ];
         }
+
+        // dd(count($payloads), $payloads);
+        // $response = $this->fetchDataFromApi('IniciaReservaPX', $payloads, 'POST');
+        // dd($response, $payloads, $bookingId, "Ordenes procesadas");
 
         $this->info('✅ Sincronización finalizada.');
     }
@@ -136,17 +144,11 @@ class ObtenerReservasPxSol extends Command
             ];
         }
 
-        $url = $this->get_url();
-        foreach ($payloads as $payload) {
+        $response = $this->fetchDataFromApi('IniciaReservaPX', $payloads, 'POST');
+        return $response;
+        // foreach ($payloads as $payload) {
             // $response = Http::post("$url/IniciaReservaPX", $payload);
-            $response = $this->fetchDataFromApi('IniciaReservaPX', $payload, 'POST');
-            Log::debug([
-                "bookingId" => $bookingId,
-                "payload" => $payload,
-                "response" => $response,
-                "message" => "Orden procesada",
-            ]);
-            dd($response, $payload, $bookingId, "Una orden procesada");
+ 
 
             // if ($response->successful()) {
             //     $this->info("✅ Reserva enviada correctamente para ID $bookingId");
@@ -157,7 +159,7 @@ class ObtenerReservasPxSol extends Command
             //     $this->error("❌ Error al enviar reserva ID $bookingId: " . $response->body());
             //     dd($response->json(), $bookingId, "Error al procesar orden");
             // }
-        }
+        // }
     }
 
     protected function cleanPlatform($medio)
@@ -190,16 +192,22 @@ class ObtenerReservasPxSol extends Command
                 ]);
 
                 $response = curl_exec($ch);
-
+                
                 if (curl_errno($ch)) {
                     $error_msg = curl_error($ch);
                     curl_close($ch);
+                    Log::debug([
+                        "response" => $error_msg,
+                    ]);
                     return response()->json(['error' => $error_msg], 500);
                 }
 
                 curl_close($ch);
 
                 $decodedResponse = json_decode($response, true);
+                    Log::debug([
+                        "response" => $decodedResponse,
+                    ]);
 
                 // Verificar si el resultado indica error
                 if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
