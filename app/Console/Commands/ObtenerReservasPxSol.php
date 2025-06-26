@@ -77,7 +77,6 @@ class ObtenerReservasPxSol extends Command
                     "FAC_A_SFISCAL" => null,
                     "DNICUIT" => null,
                     "DNICUIT_TIPO" => null,
-                    "FECHA_NACIMIENTO" => $guests['birthdate'] ?? null,
                     "ORIGEN_WEB" => "PXSOL",
                     "PLATAFORMA_EXTERNA" => $platform,
                     "ORDEN_EXTERNA" => null,
