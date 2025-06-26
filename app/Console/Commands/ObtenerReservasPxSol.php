@@ -29,7 +29,7 @@ class ObtenerReservasPxSol extends Command
 
         Log::debug("Iniciando procesamiento de reservas. Cantidad de reservas a procesar: " . count($bookings));
 
-        /* foreach ($bookings as $booking) {
+        foreach ($bookings as $booking) {
             $bookingId = $booking['booking_id'];
             $this->info("Procesando booking_id: $bookingId");
 
@@ -87,7 +87,7 @@ class ObtenerReservasPxSol extends Command
 
         Log::debug($payloads);
         $this->fetchDataFromApi('IniciaReservaPX', $payloads, 'POST');
-        $this->info('✅ Sincronización finalizada.'); */
+        $this->info('✅ Sincronización finalizada.');
     }
 
     public function get_url()
