@@ -103,7 +103,7 @@ class ObtenerReservasPxSol extends Command
 
         do {
             $response = Http::withToken(config('services.pxsol_api_key_token'))
-                ->get('https://gateway-prod.pxsol.com/v2/booking/list', ['page' => $page]);
+                ->get('https://gateway-prod.pxsol.com/v2/booking/list', ['current_page' => $page]);
 
             if (!$response->successful()) {
                 $this->error("Error al obtener página $page: " . $response->body());
