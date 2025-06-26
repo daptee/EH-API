@@ -17,11 +17,22 @@ class ObtenerReservasPxSol extends Command
         $bookings = $this->fetchAllBookings();
 
         $payloads = [];
+        $array_rooms = [
+            '135365' => 4,
+            '135364' => 3,
+            '115361' => 1,
+            '135366' => 5,
+            '135348' => 2,
+            '135367' => 6,
+            '135368' => 7,
+        ];
+
+        Log::debug("Iniciando procesamiento de reservas. Cantidad de reservas a procesar: " . count($bookings));
 
         foreach ($bookings as $booking) {
             $bookingId = $booking['booking_id'];
             $this->info("Procesando booking_id: $bookingId");
-            
+
             $detail = $this->fetchBookingDetail($bookingId);
 
             if (!$detail) {
@@ -41,23 +52,13 @@ class ObtenerReservasPxSol extends Command
 
             $platform = ($way === 'OTA') ? $this->cleanPlatform($medio) : null;
 
-            $array_rooms = [
-                '135365' => 4,
-                '135364' => 3,
-                '115361' => 1,
-                '135366' => 5,
-                '135348' => 2,
-                '135367' => 6,
-                '135368' => 7,
-            ];
-
             foreach ($rooms as $room) {
                 $adults = (int) $room['adults'] ?? 0;
                 $children = (int) $room['children'] ?? 0;
                 $babies = (int) $room['babies'] ?? 0;
                 $cuantos = $adults + $children + $babies;
                 $room_id = $room['room_id'];
-                
+
                 $payloads[] = [
                     "DESDE" => $checkin,
                     "HASTA" => $checkout,
@@ -68,18 +69,18 @@ class ObtenerReservasPxSol extends Command
                     "TELEFONO_CONTACTO" => $guests['phone'] ?? '',
                     "EMAIL_CONTACTO" => $guestDetails['email'] ?? '',
                     "EMAIL_NOTIFICACIONES" => $guestDetails['email'] ?? '',
-                    "VOL_ORDEN" => null,
+                    // "VOL_ORDEN" => null,
                     "IMPORTE_COBRADO" => number_format((float) $detail['attributes']['subtotal'], 2, ',', ''),
                     "IMPORTE_ADICIONAL" => number_format((float) $detail['attributes']['taxes'], 2, ',', ''),
-                    "TRANSACCION_NRO" => null,
-                    "FAC_A_CUIT" => null,
-                    "FAC_A_RSOCIAL" => null,
-                    "FAC_A_SFISCAL" => null,
-                    "DNICUIT" => null,
-                    "DNICUIT_TIPO" => null,
+                    // "TRANSACCION_NRO" => null,
+                    // "FAC_A_CUIT" => null,
+                    // "FAC_A_RSOCIAL" => null,
+                    // "FAC_A_SFISCAL" => null,
+                    // "DNICUIT" => null,
+                    // "DNICUIT_TIPO" => null,
                     "ORIGEN_WEB" => "PXSOL",
                     "PLATAFORMA_EXTERNA" => $platform,
-                    "ORDEN_EXTERNA" => null,
+                    // "ORDEN_EXTERNA" => null,
                 ];
             }
         }
@@ -115,7 +116,6 @@ class ObtenerReservasPxSol extends Command
 
             $allBookings = array_merge($allBookings, $items);
             $page++;
-
         } while (($meta['current_page'] ?? 1) < ($meta['last_page'] ?? 1));
 
         return $allBookings;
@@ -163,7 +163,7 @@ class ObtenerReservasPxSol extends Command
                 ]);
 
                 $response = curl_exec($ch);
-                
+
                 if (curl_errno($ch)) {
                     $error_msg = curl_error($ch);
                     curl_close($ch);
@@ -199,7 +199,7 @@ class ObtenerReservasPxSol extends Command
                 if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
                     return response()->json($decodedResponse, 400);
                 }
-    
+
                 return $decodedResponse;
             } else {
                 return $response->getBody()->getContents();
