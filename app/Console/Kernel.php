@@ -16,7 +16,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('cancelar:reservas')->everyMinute();
-        $schedule->command('obtener-reservas:pxsol')->everyMinute();
+        if (config("app.environment") === 'PROD') {
+            $schedule->command('obtener-reservas:pxsol')->everyMinute();
+        }
     }
 
     /**
