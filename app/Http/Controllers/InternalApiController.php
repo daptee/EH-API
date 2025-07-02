@@ -78,7 +78,7 @@ class InternalApiController extends Controller
                 if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
                     return response()->json($decodedResponse, 400);
                 }
-    
+
                 return $decodedResponse;
             } else {
                 return $response->getBody()->getContents();
@@ -111,7 +111,7 @@ class InternalApiController extends Controller
 
     public function Naciones2()
     {
-        $response = Http::get("https://apieh.ehboutiqueexperience.com:8086/Naciones");   
+        $response = Http::get("https://apieh.ehboutiqueexperience.com:8086/Naciones");
         if ($response->successful()) {
             return $response->json();
         } else {
@@ -138,6 +138,7 @@ class InternalApiController extends Controller
         return $this->fetchDataFromApi('Disponibilidad', [
             'FECHAD' => $request->FECHAD,
             'FECHAH' => $request->FECHAH,
+            'HAB' => $request->HAB
         ]);
     }
 
@@ -194,7 +195,7 @@ class InternalApiController extends Controller
     {
         $fechah = $request->FECHAH ?: "31/12/2030";
         $fechad = $request->FECHAD ?: "01/01/2024";
-    
+
         return $this->fetchDataFromApi('Reservas', [
             'FECHAD' => $fechad,
             'FECHAH' => $fechah,
