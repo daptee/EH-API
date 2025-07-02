@@ -135,11 +135,14 @@ class InternalApiController extends Controller
 
     public function Disponibilidad(Request $request)
     {
-        return $this->fetchDataFromApi('Disponibilidad', [
+        $params = [
             'FECHAD' => $request->FECHAD,
             'FECHAH' => $request->FECHAH,
-            'HAB' => $request->HAB
-        ]);
+        ];
+        if ($request->HAB) {
+            $params['HAB'] = $request->HAB;
+        }
+        return $this->fetchDataFromApi('Disponibilidad', $params);
     }
 
     public function ReservaxCodigo(Request $request)
