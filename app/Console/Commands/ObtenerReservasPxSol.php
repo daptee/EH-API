@@ -68,12 +68,14 @@ class ObtenerReservasPxSol extends Command
 
                 if($status_id == 1){
                     try {
-                        $this->fetchDataFromApi('CancelaReserva', [
-                            'RSV' => $bookingId
+                        $this->fetchDataFromApi('CancelaReservaPX', [
+                            'RSVPX' => $bookingId,
+                            'HAB' => $array_rooms[$room_id]
                         ], 'POST');
                     } catch (Exception $e) {
                         Log::channel('pxsol')->error("Error al cancelar reserva", [
-                            'RSV' => $bookingId,
+                            'RSVPX' => $bookingId,
+                            'HAB' => $array_rooms[$room_id],
                             'message' => $e->getMessage()
                         ]);
                     }
