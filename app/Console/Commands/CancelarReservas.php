@@ -77,17 +77,23 @@ class CancelarReservas extends Command
                 return ['status' => 500, 'error' => $error_msg];
             }
 
+            // ✅ acá obtenés el código real de la respuesta
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
             curl_close($ch);
 
             $decodedResponse = json_decode($response, true);
 
             // Verificar si el resultado indica error
             if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
-                Log::debug(["error_response_cancels_reservation" => $decodedResponse]);
-                return ['status' => 400, 'error' => $decodedResponse];
+                Log::debug([
+                    "error_response_cancels_reservation" => $decodedResponse,
+                    "http_code" => $httpCode
+                ]);
+                return ['status' => $httpCode, 'error' => $decodedResponse];
             }
 
-            return ['status' => 200, 'decodedResponse' => $decodedResponse];
+            return ['status' => $httpCode, 'decodedResponse' => $decodedResponse];
 
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             Log::debug(["error_response_cancels_reservation" => $e->getMessage()]);
@@ -121,6 +127,8 @@ class CancelarReservas extends Command
 
                 Log::debug("Numero de reserva: $reservation->reservation_number , Resultado API: $response_log");
                 
+                $reservation_number = $reservation->reservation_number; 
+
                 if($response['status'] == 200){
                     try {
                         $status_id = ReservationStatus::CANCELADO_AUTOMATICO;
@@ -133,6 +141,19 @@ class CancelarReservas extends Command
                     } catch (Exception $e) {
                         $error = $e->getMessage();
                         Log::debug("Numero de reserva: $reservation->reservation_number , Resultado: Error al cancelar reserva, Message: $error");                       
+                    }
+                }else if($response['status'] == 400 && $response['error']['ERROR_MSG'] == "RESERVA $reservation_number NO EXISTE"){
+                    try {
+                        $status_id = ReservationStatus::CANCELADO_AUTOMATICO;
+
+                        $reservation->status_id = $status_id;
+                        $reservation->save();
+    
+                        ReservationStatusHistory::saveHistoryStatusReservation($reservation->id, $status_id);
+                        Log::debug("Numero de reserva: $reservation_number , Resultado: Reserva cancelada con exito.");                       
+                    } catch (Exception $e) {
+                        $error = $e->getMessage();
+                        Log::debug("Numero de reserva: $reservation_number , Resultado: Error al cancelar reserva, Message: $error");                       
                     }
                 }
             }

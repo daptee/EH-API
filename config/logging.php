@@ -117,6 +117,12 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        'pxsol' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/pxsol-' . date('Y-m-d') . '.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

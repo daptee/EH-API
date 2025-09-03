@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,7 +14,7 @@ class ObtenerReservasPxSol extends Command
 
     public function handle()
     {
-        $this->info('Iniciando sincronización de reservas...');
+        // $this->info('Iniciando sincronización de reservas...');
         $bookings = $this->fetchAllBookings();
 
         $payloads = [];
@@ -27,16 +28,21 @@ class ObtenerReservasPxSol extends Command
             '135368' => 7,
         ];
 
-        Log::debug("Iniciando procesamiento de reservas. Cantidad de reservas a procesar: " . count($bookings));
+        Log::channel('pxsol')->debug("Iniciando procesamiento de reservas. Cantidad: " . count($bookings));
+        // Log::debug("Iniciando procesamiento de reservas. Cantidad de reservas a procesar: " . count($bookings));
 
         foreach ($bookings as $booking) {
             $bookingId = $booking['booking_id'];
-            $this->info("Procesando booking_id: $bookingId");
+            // Log::channel('pxsol')->debug("Procesando booking_id: $bookingId", [
+            //     'booking' => $booking
+            // ]);
+            // $this->info("Procesando booking_id: $bookingId");
 
             $detail = $this->fetchBookingDetail($bookingId);
 
             if (!$detail) {
-                $this->warn("No se pudo obtener el detalle para ID $bookingId");
+                Log::channel('pxsol')->warning("No se pudo obtener el detalle para ID $bookingId");
+                // $this->warn("No se pudo obtener el detalle para ID $bookingId");
                 continue;
             }
 
@@ -58,36 +64,53 @@ class ObtenerReservasPxSol extends Command
                 $babies = (int) $room['babies'] ?? 0;
                 $cuantos = $adults + $children + $babies;
                 $room_id = $room['room_id'];
+                $status_id = $room['status'];
 
-                $payloads[] = [
-                    "DESDE" => $checkin,
-                    "HASTA" => $checkout,
-                    "HAB" =>  $array_rooms[$room_id] ?? null, // Completar si aplica mapping de habitación
-                    "CUANTOS" => $cuantos,
-                    "RESERVA_PXSOL" => $bookingId,
-                    "PAX" => trim(($guestDetails['name'] ?? '') . ' ' . ($guestDetails['last_name'] ?? '')),
-                    "TELEFONO_CONTACTO" => $guests['phone'] ?? '',
-                    "EMAIL_CONTACTO" => $guestDetails['email'] ?? '',
-                    "EMAIL_NOTIFICACIONES" => $guestDetails['email'] ?? '',
-                    // "VOL_ORDEN" => null,
-                    "IMPORTE_COBRADO" => number_format((float) $detail['attributes']['subtotal'], 2, ',', ''),
-                    "IMPORTE_ADICIONAL" => number_format((float) $detail['attributes']['taxes'], 2, ',', ''),
-                    // "TRANSACCION_NRO" => null,
-                    // "FAC_A_CUIT" => null,
-                    // "FAC_A_RSOCIAL" => null,
-                    // "FAC_A_SFISCAL" => null,
-                    // "DNICUIT" => null,
-                    // "DNICUIT_TIPO" => null,
-                    "ORIGEN_WEB" => "PXSOL",
-                    "PLATAFORMA_EXTERNA" => $platform,
-                    // "ORDEN_EXTERNA" => null,
-                ];
+                if($status_id == 1){
+                    try {
+                        $this->fetchDataFromApi('CancelaReservaPX', [
+                            'RSVPX' => $bookingId,
+                            'HAB' => $array_rooms[$room_id]
+                        ], 'POST');
+                    } catch (Exception $e) {
+                        Log::channel('pxsol')->error("Error al cancelar reserva", [
+                            'RSVPX' => $bookingId,
+                            'HAB' => $array_rooms[$room_id],
+                            'message' => $e->getMessage()
+                        ]);
+                    }
+                }else if($status_id == 3){
+                    $payloads[] = [
+                        "DESDE" => $checkin,
+                        "HASTA" => $checkout,
+                        "HAB" =>  $array_rooms[$room_id] ?? null, // Completar si aplica mapping de habitación
+                        "CUANTOS" => $cuantos,
+                        "RESERVA_PXSOL" => $bookingId,
+                        "PAX" => trim(($guestDetails['name'] ?? '') . ' ' . ($guestDetails['last_name'] ?? '')),
+                        "TELEFONO_CONTACTO" => $guests['phone'] ?? '',
+                        "EMAIL_CONTACTO" => $guestDetails['email'] ?? '',
+                        "EMAIL_NOTIFICACIONES" => $guestDetails['email'] ?? '',
+                        // "VOL_ORDEN" => null,
+                        "IMPORTE_COBRADO" => number_format((float) $detail['attributes']['subtotal'], 2, ',', ''),
+                        "IMPORTE_ADICIONAL" => number_format((float) $detail['attributes']['taxes'], 2, ',', ''),
+                        // "TRANSACCION_NRO" => null,
+                        // "FAC_A_CUIT" => null,
+                        // "FAC_A_RSOCIAL" => null,
+                        // "FAC_A_SFISCAL" => null,
+                        // "DNICUIT" => null,
+                        // "DNICUIT_TIPO" => null,
+                        "ORIGEN_WEB" => "PXSOL",
+                        "PLATAFORMA_EXTERNA" => $platform,
+                        // "ORDEN_EXTERNA" => null,
+                    ];
+                }
             }
         }
 
-        Log::debug($payloads);
+        Log::channel('pxsol')->debug("Payloads enviados a IniciaReservaPX", [
+            'payloads' => $payloads
+        ]);
         $this->fetchDataFromApi('IniciaReservaPX', $payloads, 'POST');
-        $this->info('✅ Sincronización finalizada.');
     }
 
     public function get_url()
@@ -102,11 +125,21 @@ class ObtenerReservasPxSol extends Command
         $page = 1;
 
         do {
+            $createdFrom = now()->subDays(5)->format('Y-m-d');
+            $createdTo   = now()->format('Y-m-d');
+
             $response = Http::withToken(config('services.pxsol_api_key_token'))
-                ->get('https://gateway-prod.pxsol.com/v2/booking/list', ['current_page' => $page]);
+                ->get('https://gateway-prod.pxsol.com/v2/booking/list', [
+                    'current_page' => $page,
+                    'created_from' => $createdFrom,
+                    'created_to'   => $createdTo,
+                ]);
 
             if (!$response->successful()) {
-                $this->error("Error al obtener página $page: " . $response->body());
+                Log::channel('pxsol')->error("Error al obtener página $page", [
+                    'body' => $response->body()
+                ]);
+                // $this->error("Error al obtener página $page: " . $response->body());
                 break;
             }
 
@@ -117,6 +150,8 @@ class ObtenerReservasPxSol extends Command
             $allBookings = array_merge($allBookings, $items);
             $page++;
         } while (($meta['current_page'] ?? 1) < ($meta['last_page'] ?? 1));
+
+        Log::channel('pxsol')->info("Total de reservas obtenidas", ['count' => count($allBookings)]);
 
         return $allBookings;
     }
@@ -167,8 +202,9 @@ class ObtenerReservasPxSol extends Command
                 if (curl_errno($ch)) {
                     $error_msg = curl_error($ch);
                     curl_close($ch);
-                    Log::debug([
-                        "response" => $error_msg,
+                    Log::channel('pxsol')->error("Error ejecutando $endpoint:", [
+                        'params' => $params,
+                        'response' => $error_msg,
                     ]);
                     return response()->json(['error' => $error_msg], 500);
                 }
@@ -176,10 +212,10 @@ class ObtenerReservasPxSol extends Command
                 curl_close($ch);
 
                 $decodedResponse = json_decode($response, true);
-                Log::debug([
-                    "response" => $decodedResponse,
+                Log::channel('pxsol')->error("Error ejecutando $endpoint:", [
+                    'params' => $params,
+                    'response' => $decodedResponse,
                 ]);
-
                 // Verificar si el resultado indica error
                 if (isset($decodedResponse['RESULT']) && $decodedResponse['RESULT'] === 'ERROR') {
                     return response()->json($decodedResponse, 400);
