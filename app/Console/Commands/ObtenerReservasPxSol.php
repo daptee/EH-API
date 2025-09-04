@@ -64,7 +64,7 @@ class ObtenerReservasPxSol extends Command
                 $babies = (int) $room['babies'] ?? 0;
                 $cuantos = $adults + $children + $babies;
                 $room_id = $room['room_id'];
-                $status_id = $room['status'];
+                $status_id = $booking['status'];
 
                 if($status_id == 1){
                     try {
