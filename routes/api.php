@@ -62,7 +62,7 @@ Route::post('matriz-design/send-form', [FormController::class, 'matriz_design'])
 
 Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
-    
+
     // User Controller
     // Route::post('users/update', [UserController::class, 'update']);
     // Route::get('users/{id}', [UserController::class, 'show']);
@@ -96,12 +96,13 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
     Route::post('/RealizaCheck', 'RealizaCheck');
     Route::get('/ReservaxOExterna', 'ReservaxOExterna');
     Route::get('/ReservaActiva', 'ReservaActiva');
+    Route::get('/Agencias', 'Agencias');
 });
 
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);
 
 // Clear cache
-Route::get('/clear-cache', function() {
+Route::get('/clear-cache', function () {
     Artisan::call('config:clear');
     Artisan::call('optimize');
 
@@ -110,7 +111,7 @@ Route::get('/clear-cache', function() {
     ]);
 });
 
-Route::get('test-mail', function() {
+Route::get('test-mail', function () {
     try {
         $text = "Test de envio de mail Hielo y Aventura";
         Mail::to("slarramendy@daptee.com.ar")->send(new TestMail("slarramendy@daptee.com.ar", $text));
