@@ -199,10 +199,15 @@ class InternalApiController extends Controller
         $fechah = $request->FECHAH ?: "31/12/2030";
         $fechad = $request->FECHAD ?: "01/01/2024";
 
-        return $this->fetchDataFromApi('Reservas', [
+        $params = [
             'FECHAD' => $fechad,
             'FECHAH' => $fechah,
-        ]);
+        ];
+        if ($request->AG) {
+            $params['AG'] = $request->AG;
+        }
+
+        return $this->fetchDataFromApi('Reservas', $params);
     }
 
     public function IniciaReserva(Request $request)
