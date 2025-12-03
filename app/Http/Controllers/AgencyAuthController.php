@@ -10,6 +10,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\AgencyUser;
 use Exception;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 
 class AgencyAuthController extends Controller
 {
@@ -93,6 +95,41 @@ class AgencyAuthController extends Controller
         } catch (JWTException $e) {
             return response()->json(['message' => 'Error al invalidar el token.'], 500);
         }
+    }
+
+    /**
+     * Recuperación de contraseña para usuarios de agencia
+     */
+    public function recover_password(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = AgencyUser::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'No existe un usuario de agencia con el correo solicitado.'], 402);
+        }
+
+        try {
+            $new_password = Str::random(16);
+            // AgencyUser tiene mutator para hashear la contraseña
+            $user->password = $new_password;
+            $user->save();
+
+            $data = [
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'email' => $user->email,
+                'password' => $new_password,
+            ];
+
+            Mail::to($user->email)->send(new \App\Mail\recoverPasswordMailable($data));
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'Correo enviado con exito.'], 200);
     }
 
     protected function respondWithToken($token, $id)

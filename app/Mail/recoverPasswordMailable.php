@@ -28,7 +28,7 @@ class recoverPasswordMailable extends Mailable
      */
     public function build()
     {
-        return $this->subject('EH Boutique Experiencie - Recuperación de contraseña')
+        return $this->subject('EH Boutique Experience - Restablecimiento de contraseña')
                     ->view('emails.recoverPassword');
     }
 }

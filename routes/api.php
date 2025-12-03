@@ -104,6 +104,7 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
 Route::prefix('agency')->controller(AgencyAuthController::class)->group(function () {
     Route::post('/register', 'register');
     Route::post('/login', 'login');
+    Route::post('/recover-password', 'recover_password');
     Route::post('/logout', 'logout')->middleware('jwt.verify');
 });
 
