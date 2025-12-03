@@ -132,6 +132,54 @@ class AgencyAuthController extends Controller
         return response()->json(['message' => 'Correo enviado con exito.'], 200);
     }
 
+    /**
+     * Actualizar perfil de usuario de agencia (requiere autenticación JWT)
+     */
+    public function update_profile(Request $request)
+    {
+        try {
+            if (!Auth::guard('agency')->check()) {
+                return response()->json(['message' => 'Usuario no autenticado.'], 401);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'first_name' => 'required|string|max:255',
+                'last_name'  => 'required|string|max:255',
+                'email'      => 'required|email|unique:agency_users,email,' . Auth::guard('agency')->user()->id,
+                'password'   => 'nullable|string|min:6',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Errores de validación.',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $user = Auth::guard('agency')->user();
+
+            $user->first_name = $request->first_name;
+            $user->last_name = $request->last_name;
+            $user->email = $request->email;
+
+            if ($request->filled('password')) {
+                $user->password = $request->password; // se hashea automáticamente con el mutator
+            }
+
+            $user->save();
+
+            return response()->json([
+                'message' => 'Perfil actualizado exitosamente.',
+                'data' => $user,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el perfil.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     protected function respondWithToken($token, $id)
     {
         $expire_in = config('jwt.ttl');

@@ -106,6 +106,7 @@ Route::prefix('agency')->controller(AgencyAuthController::class)->group(function
     Route::post('/login', 'login');
     Route::post('/recover-password', 'recover_password');
     Route::post('/logout', 'logout')->middleware('jwt.verify');
+    Route::post('/profile/update', 'update_profile')->middleware('jwt.verify');
 });
 
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);
