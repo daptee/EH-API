@@ -75,10 +75,20 @@ class ReservationController extends Controller
                 // Almacenamos historial de estado en reserva
                 ReservationStatusHistory::saveHistoryStatusReservation($request->reservation_id, $status_id);
             });
+            // Build agency user display name safely
+            $agency = $reservation->agency_user ?? null;
+            $agency_user_name = null;
+            if ($agency) {
+                $first = $agency->name ?? '';
+                $last = $agency->last_name ?? '';
+                $full = trim($first . ' ' . $last);
+                $agency_user_name = $full !== '' ? $full : null;
+            }
+
             $data = [
                 'reservation_number' => $reservation->reservation_number,
                 'room_number' => $request->room_number,
-                'agency_user_name' => $reservation->agency_user->name . ' ' . $reservation->agency_user->last_name,
+                'agency_user_name' => $agency_user_name,
                 'name' => $request->user['name'],
                 'last_name' => $request->user['last_name'],
                 'check_in' => $request->user['check_in'],
