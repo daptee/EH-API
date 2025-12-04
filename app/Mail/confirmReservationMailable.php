@@ -31,7 +31,11 @@ class confirmReservationMailable extends Mailable
      */
     public function build()
     {
+        $view = isset($this->data['agency_type'])
+            ? 'emails.agencyConfirmReservation'
+            : 'emails.confirmReservation';
+
         return $this->subject($this->subject)
-                    ->view('emails.confirmReservation');
+                    ->view($view);
     }
 }
