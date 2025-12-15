@@ -18,6 +18,11 @@ class Reservation extends Model
         return $this->hasOne(ReservationStatus::class, 'id', 'status_id');
     }
 
+    public function agency_user(): HasOne
+    {
+        return $this->hasOne(AgencyUser::class, 'id', 'agency_user_id');
+    }
+
     public function status_history(): HasMany
     {
         return $this->HasMany(ReservationStatusHistory::class, 'reservation_id', 'id');

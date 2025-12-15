@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AgencyAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\InternalApiController;
@@ -96,6 +97,16 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
     Route::post('/RealizaCheck', 'RealizaCheck');
     Route::get('/ReservaxOExterna', 'ReservaxOExterna');
     Route::get('/ReservaActiva', 'ReservaActiva');
+    Route::get('/Agencias', 'Agencias');
+    Route::post('/CreaReservaAgencias', 'CreaReservaAgencias');
+});
+
+Route::prefix('agency')->controller(AgencyAuthController::class)->group(function () {
+    Route::post('/register', 'register');
+    Route::post('/login', 'login');
+    Route::post('/recover-password', 'recover_password');
+    Route::post('/logout', 'logout')->middleware('jwt.verify');
+    Route::post('/profile/update', 'update_profile')->middleware('jwt.verify');
 });
 
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);

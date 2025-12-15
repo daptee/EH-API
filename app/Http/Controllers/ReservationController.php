@@ -39,6 +39,7 @@ class ReservationController extends Controller
         try {
             $reservation = new Reservation();
             $reservation->reservation_number = $request->reservation_number;
+            $reservation->agency_user_id = $request->agency_user_id ?? null;
             $reservation->status_id = ReservationStatus::INICIADA;
             $reservation->save();
 
@@ -60,7 +61,7 @@ class ReservationController extends Controller
             "user" => 'required',
         ]);
 
-        $reservation = Reservation::find($request->reservation_id);
+        $reservation = Reservation::with('agency_user')->find($request->reservation_id);
 
         try {
             DB::transaction(function () use ($request, $reservation) {
@@ -74,9 +75,20 @@ class ReservationController extends Controller
                 // Almacenamos historial de estado en reserva
                 ReservationStatusHistory::saveHistoryStatusReservation($request->reservation_id, $status_id);
             });
+            // Build agency user display name safely
+            $agency = $reservation->agency_user ?? null;
+            $agency_user_name = null;
+            if ($agency) {
+                $first = $agency->name ?? '';
+                $last = $agency->last_name ?? '';
+                $full = trim($first . ' ' . $last);
+                $agency_user_name = $full !== '' ? $full : null;
+            }
+
             $data = [
                 'reservation_number' => $reservation->reservation_number,
                 'room_number' => $request->room_number,
+                'agency_user_name' => $agency_user_name,
                 'name' => $request->user['name'],
                 'last_name' => $request->user['last_name'],
                 'check_in' => $request->user['check_in'],
@@ -84,6 +96,7 @@ class ReservationController extends Controller
                 'number_of_passengers' => $request->number_of_passengers,
                 'email' => $request->user['email'],
                 'phone' => $request->user['phone'],
+                'agency_type' => $request->agency_type,
             ];
 
             try {
@@ -94,6 +107,19 @@ class ReservationController extends Controller
                     "line" => $error->getLine(),
                     "error" => $error->getMessage(),
                 ]);
+            }
+
+            $email_agency_user = $reservation->agency_user->email;
+            if (isset($request->agency_type) && $email_agency_user) {
+                try {
+                    Mail::to($email_agency_user)->send(new confirmReservationMailable($data, "agencia")); // para agencia
+                } catch (Exception $error) {
+                    Log::debug([
+                        "message" => "Proceso correcto. Error en envio de mail interno",
+                        "line" => $error->getLine(),
+                        "error" => $error->getMessage(),
+                    ]);
+                }
             }
 
             try {
