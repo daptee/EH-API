@@ -26,7 +26,7 @@ class FormController extends Controller
             Mail::to($mail_to)->send(new FormContact($data));
         } catch (Exception $error) {
             Log::debug(print_r(["message" => $error->getMessage() . " error en envio de mail de contacto", $error->getLine()],  true));
-            return response()->json(["message" => "Error en envio de mail contacto: " . $error->getMessage()]);
+            return response()->json(["message" => "Error en envio de mail contacto: " . $error->getMessage()], 400);
         }
 
         return response()->json(['message' => 'Contacto enviado con exito.']);
@@ -42,7 +42,7 @@ class FormController extends Controller
             // Mail::to("slarramendy@daptee.com.ar")->send(new MatrizDesign($data));
         } catch (Exception $error) {
             Log::debug(print_r(["message" => $error->getMessage() . " error en envio de mail matriz design", $error->getLine()],  true));
-            return response()->json(["message" => "Error en envio de mail matriz design: " . $error->getMessage()]);
+            return response()->json(["message" => "Error en envio de mail matriz design: " . $error->getMessage()], 400);
         }
 
         return response()->json(['message' => 'Mail matriz-design enviado con exito.']);
