@@ -99,6 +99,7 @@ Route::prefix('internal-api-eh')->controller(InternalApiController::class)->grou
     Route::get('/ReservaActiva', 'ReservaActiva');
     Route::get('/Agencias', 'Agencias');
     Route::post('/CreaReservaAgencias', 'CreaReservaAgencias');
+    Route::get('/ArticulosDesayunos', 'ArticulosDesayunos');
 });
 
 Route::prefix('agency')->controller(AgencyAuthController::class)->group(function () {
@@ -127,7 +128,7 @@ Route::get('test-mail', function () {
         Mail::to("slarramendy@daptee.com.ar")->send(new TestMail("slarramendy@daptee.com.ar", $text));
         return 'Mail enviado';
     } catch (\Throwable $th) {
-        Log::debug(print_r([$th->getMessage(), $th->getLine()],  true));
+        Log::debug(print_r([$th->getMessage(), $th->getLine()], true));
         return 'Mail no enviado';
     }
 });
