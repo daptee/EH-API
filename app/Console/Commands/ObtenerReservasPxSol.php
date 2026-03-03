@@ -51,6 +51,7 @@ class ObtenerReservasPxSol extends Command
             $bookingId = $booking['booking_id'];
 
             $rooms = $detail['relationships']['rooms']['data'] ?? [];
+
             $guests = $detail['relationships']['guests']['data']['attributes'][0] ?? [];
             $guestDetails = $booking['guest_details'] ?? [];
             $way = $detail['attributes']['way'] ?? null;
@@ -66,12 +67,19 @@ class ObtenerReservasPxSol extends Command
                 $room_id = $room['room_id'];
                 $status_id = $booking['status'];
 
-                if($status_id == 1){
+                if ($status_id == 1) {
                     try {
-                        $this->fetchDataFromApi('CancelaReservaPX', [
+                        $params = [
                             'RSVPX' => $bookingId,
                             'HAB' => $array_rooms[$room_id]
-                        ], 'POST');
+                        ];
+
+                        $response = $this->fetchDataFromApi('CancelaReservaPX', $params, 'POST');
+
+                        Log::channel('pxsol')->debug("DEBUG CANCELA RESERVA para reserva $bookingId y habitacion $room_id:", [
+                            'params_sent' => $params,
+                            'response_received' => $response
+                        ]);
                     } catch (Exception $e) {
                         Log::channel('pxsol')->error("Error al cancelar reserva", [
                             'RSVPX' => $bookingId,
@@ -79,11 +87,11 @@ class ObtenerReservasPxSol extends Command
                             'message' => $e->getMessage()
                         ]);
                     }
-                }else if($status_id == 3){
+                } else if ($status_id == 3) {
                     $payloads[] = [
                         "DESDE" => $checkin,
                         "HASTA" => $checkout,
-                        "HAB" =>  $array_rooms[$room_id] ?? null, // Completar si aplica mapping de habitación
+                        "HAB" => $array_rooms[$room_id] ?? null, // Completar si aplica mapping de habitación
                         "CUANTOS" => $cuantos,
                         "RESERVA_PXSOL" => $bookingId,
                         "PAX" => trim(($guestDetails['name'] ?? '') . ' ' . ($guestDetails['last_name'] ?? '')),
@@ -126,13 +134,13 @@ class ObtenerReservasPxSol extends Command
 
         do {
             $createdFrom = now()->subDays(5)->format('Y-m-d');
-            $createdTo   = now()->format('Y-m-d');
+            $createdTo = now()->format('Y-m-d');
 
             $response = Http::withToken(config('services.pxsol_api_key_token'))
                 ->get('https://gateway-prod.pxsol.com/v2/booking/list', [
                     'current_page' => $page,
                     'created_from' => $createdFrom,
-                    'created_to'   => $createdTo,
+                    'created_to' => $createdTo,
                 ]);
 
             if (!$response->successful()) {
