@@ -269,4 +269,9 @@ class InternalApiController extends Controller
     {
         return $this->fetchDataFromApi('CreaReservaAgencias', $request->all(), 'POST');
     }
+
+    public function ArticulosDesayunos()
+    {
+        return $this->fetchDataFromApi('ArticulosDesayunos');
+    }
 }
