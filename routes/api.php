@@ -25,6 +25,16 @@ use Illuminate\Support\Facades\Mail;
 |
 */
 
+// RUTA DE DIAGNÓSTICO TEMPORAL — ELIMINAR DESPUÉS
+Route::get('debug-auth', function (\Illuminate\Http\Request $request) {
+    return response()->json([
+        'bearer_token'     => $request->bearerToken(),
+        'auth_header'      => $request->header('Authorization'),
+        'HTTP_AUTHORIZATION' => $_SERVER['HTTP_AUTHORIZATION'] ?? 'NOT SET',
+        'REDIRECT_HTTP_AUTHORIZATION' => $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? 'NOT SET',
+    ]);
+});
+
 Route::controller(AuthController::class)->group(function () {
     Route::post('login_super_admin', 'login_super_admin')->middleware('throttle:login');
     // Route::post('register', 'register');
