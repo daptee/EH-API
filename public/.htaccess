@@ -5,9 +5,10 @@
 
     RewriteEngine On
 
-    # Handle Authorization Header
+    # Handle Authorization Header (PHP-CGI/FastCGI strips it sin esto)
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
