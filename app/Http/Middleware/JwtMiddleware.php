@@ -20,6 +20,16 @@ class JwtMiddleware extends BaseMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        // En algunos hostings Apache stripea el header Authorization antes de llegar a PHP.
+        // apache_request_headers() lo recupera directamente del servidor.
+        if (!$request->hasHeader('Authorization') && function_exists('apache_request_headers')) {
+            $headers = apache_request_headers();
+            $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+            if ($auth) {
+                $request->headers->set('Authorization', $auth);
+            }
+        }
+
         try {
             $user = JWTAuth::parseToken()->authenticate();
 
