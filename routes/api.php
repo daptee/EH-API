@@ -27,11 +27,12 @@ use Illuminate\Support\Facades\Mail;
 
 // RUTA DE DIAGNÓSTICO TEMPORAL — ELIMINAR DESPUÉS
 Route::get('debug-auth', function (\Illuminate\Http\Request $request) {
+    $apacheHeaders = function_exists('apache_request_headers') ? apache_request_headers() : 'NOT AVAILABLE';
     return response()->json([
-        'bearer_token'     => $request->bearerToken(),
-        'auth_header'      => $request->header('Authorization'),
-        'HTTP_AUTHORIZATION' => $_SERVER['HTTP_AUTHORIZATION'] ?? 'NOT SET',
-        'REDIRECT_HTTP_AUTHORIZATION' => $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? 'NOT SET',
+        'bearer_token'        => $request->bearerToken(),
+        'auth_header_laravel' => $request->header('Authorization'),
+        'all_request_headers' => $request->headers->all(),
+        'apache_headers'      => $apacheHeaders,
     ]);
 });
 
