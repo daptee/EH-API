@@ -20,11 +20,21 @@ class JwtMiddleware extends BaseMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // En algunos hostings Apache stripea el header Authorization antes de llegar a PHP.
-        // apache_request_headers() lo recupera directamente del servidor.
-        if (!$request->hasHeader('Authorization') && function_exists('apache_request_headers')) {
-            $headers = apache_request_headers();
-            $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+        // El proxy del hosting stripea el header Authorization específicamente.
+        // Fallback 1: apache_request_headers() (por si llegara por otra vía)
+        // Fallback 2: X-Authorization (header custom que los proxies no stripean)
+        if (!$request->hasHeader('Authorization')) {
+            $auth = null;
+
+            if (function_exists('apache_request_headers')) {
+                $apacheHeaders = apache_request_headers();
+                $auth = $apacheHeaders['Authorization'] ?? $apacheHeaders['authorization'] ?? null;
+            }
+
+            if (!$auth) {
+                $auth = $request->header('X-Authorization');
+            }
+
             if ($auth) {
                 $request->headers->set('Authorization', $auth);
             }
