@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\SecurityLogger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\Auth;
@@ -51,16 +52,33 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // User admin 
+        $ip = $request->ip();
+        $ua = $request->header('User-Agent', '-');
+
+        // 1. Verificar que el usuario exista y sea super admin
         $user_to_validate = User::where('email', $request->email)->first();
-        
-        if(!isset($user_to_validate) || $user_to_validate->user_type_id != UserType::SUPERADMIN)
+
+        if (!isset($user_to_validate) || $user_to_validate->user_type_id != UserType::SUPERADMIN) {
+            SecurityLogger::failedLogin($request->email, $ip, $ua, 'user_not_found_or_not_superadmin');
             return response()->json(['message' => 'Email y/o clave no válidos.'], 400);
-        
+        }
+
+        // 2. Verificar si la contraseña fue expirada (reset masivo)
+        if ($user_to_validate->password_expired) {
+            SecurityLogger::failedLogin($request->email, $ip, $ua, 'password_expired');
+            return response()->json([
+                'message'          => 'Tu contraseña ha expirado. Usá el flujo de recuperación de contraseña.',
+                'password_expired' => true,
+            ], 400);
+        }
+
+        // 3. Validar credenciales
         $credentials = $request->only('email', 'password');
 
-        if (! $token = JWTAuth::attempt($credentials))
+        if (!$token = JWTAuth::attempt($credentials)) {
+            SecurityLogger::failedLogin($request->email, $ip, $ua, 'wrong_credentials');
             return response()->json(['message' => 'Email y/o clave no válidos.'], 400);
+        }
 
         return $this->respondWithToken($token, Auth::user()->id);
     }

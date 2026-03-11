@@ -34,14 +34,17 @@ class UserController extends Controller
         
         $user = User::where('email', $request->email)->first();
 
-        if(!$user)
-            return response()->json(['message' => 'No existe un usuario con el mail solicitado.'], 402);
-        
+        // Siempre responder 200 para no revelar si el email existe (previene email enumeration)
+        if (!$user) {
+            return response()->json(['message' => 'Correo enviado con exito.'], 200);
+        }
+
         try {
-            $new_password = Str::random(16);
-            $user->password = Hash::make($new_password);
+            $new_password            = Str::random(16);
+            $user->password          = Hash::make($new_password);
+            $user->password_expired  = false; // limpiar flag de reset masivo si aplica
             $user->save();
-            
+
             $data = [
                 'name' => $user->nombre,
                 'email' => $user->email,
@@ -51,7 +54,7 @@ class UserController extends Controller
         } catch (Exception $error) {
             return response(["error" => $error->getMessage()], 500);
         }
-       
+
         return response()->json(['message' => 'Correo enviado con exito.'], 200);
         
     }

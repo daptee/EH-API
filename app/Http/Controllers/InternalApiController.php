@@ -29,7 +29,7 @@ class InternalApiController extends Controller
     {
         try {
             $url = $this->get_url();
-            $client = new \GuzzleHttp\Client(['base_uri' => $url, 'verify' => false]);
+            $client = new \GuzzleHttp\Client(['base_uri' => $url, 'verify' => true]);
 
             // Transformar los parámetros antes de enviarlos
             $params = $this->transformParams($params);
@@ -41,7 +41,7 @@ class InternalApiController extends Controller
                 curl_setopt($ch, CURLOPT_POST, 1); // Indicar que es una petición POST
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params)); // Pasar los datos a enviar
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Para recibir la respuesta como string
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, [
                     'Content-Type: application/json',
                     'Accept: application/json',
