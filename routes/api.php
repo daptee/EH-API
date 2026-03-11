@@ -135,16 +135,18 @@ Route::prefix('internal-api-eh')
 
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);
 
+// TEMPORAL: clear-cache sin auth para desbloquear caché de rutas en DEV
+Route::get('/clear-cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('optimize');
+    return response()->json(["message" => "Cache cleared successfully"]);
+});
+
 // Endpoints de utilidad — requieren autenticación de admin
 Route::middleware(['jwt.verify', 'audit.log'])->group(function () {
-    Route::get('/clear-cache', function () {
-        Artisan::call('config:clear');
-        Artisan::call('optimize');
-
-        return response()->json([
-            "message" => "Cache cleared successfully"
-        ]);
-    });
+    // (clear-cache movido temporalmente afuera — restaurar con JWT después)
 
     Route::get('test-mail', function () {
         try {
