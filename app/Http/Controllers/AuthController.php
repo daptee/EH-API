@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\SecurityLogger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Mail\AdminOtpMail;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\User;
@@ -47,22 +51,95 @@ class AuthController extends Controller
     public function login_super_admin(LoginRequest $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
-        // User admin 
-        $user_to_validate = User::where('email', $request->email)->first();
-        
-        if(!isset($user_to_validate) || $user_to_validate->user_type_id != UserType::SUPERADMIN)
+        $ip = $request->ip();
+        $ua = $request->header('User-Agent', '-');
+
+        // 1. Verificar que el usuario exista y sea super admin
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || $user->user_type_id != UserType::SUPERADMIN) {
+            SecurityLogger::failedLogin($request->email, $ip, $ua, 'user_not_found_or_not_superadmin');
             return response()->json(['message' => 'Email y/o clave no válidos.'], 400);
-        
+        }
+
+        // 2. Verificar si la contraseña fue expirada (reset masivo)
+        if ($user->password_expired) {
+            SecurityLogger::failedLogin($request->email, $ip, $ua, 'password_expired');
+            return response()->json([
+                'message'          => 'Tu contraseña ha expirado. Usá el flujo de recuperación de contraseña.',
+                'password_expired' => true,
+            ], 400);
+        }
+
+        // 3. Validar credenciales
         $credentials = $request->only('email', 'password');
 
-        if (! $token = JWTAuth::attempt($credentials))
+        if (!JWTAuth::attempt($credentials)) {
+            SecurityLogger::failedLogin($request->email, $ip, $ua, 'wrong_credentials');
             return response()->json(['message' => 'Email y/o clave no válidos.'], 400);
+        }
 
-        return $this->respondWithToken($token, Auth::user()->id);
+        // 4. Credenciales OK — generar OTP y enviarlo por email (NO emitir JWT todavía)
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $user->otp_code       = $otp;
+        $user->otp_expires_at = now()->addMinutes(10);
+        $user->save();
+
+        Mail::to($user->email)->send(new AdminOtpMail($otp, $user->name));
+
+        SecurityLogger::adminAction('2fa_otp_sent', $ip, $user->email);
+
+        return response()->json(['pending_2fa' => true], 200);
+    }
+
+    public function verify_otp_super_admin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp'   => 'required|string|size:6',
+        ]);
+
+        $ip = $request->ip();
+        $ua = $request->header('User-Agent', '-');
+
+        $user = User::where('email', $request->email)
+                    ->where('user_type_id', UserType::SUPERADMIN)
+                    ->first();
+
+        // 1. Verificar que existe OTP pendiente
+        if (!$user || !$user->otp_code || !$user->otp_expires_at) {
+            return response()->json(['message' => 'Código inválido o expirado.'], 400);
+        }
+
+        // 2. Verificar expiración
+        if ($user->otp_expires_at->lt(now())) {
+            $user->otp_code       = null;
+            $user->otp_expires_at = null;
+            $user->save();
+            return response()->json(['message' => 'El código ha expirado.'], 400);
+        }
+
+        // 3. Verificar código (resistente a timing attacks)
+        if (!hash_equals($user->otp_code, $request->otp)) {
+            SecurityLogger::failedLogin($request->email, $ip, $ua, 'wrong_otp');
+            return response()->json(['message' => 'Código inválido.'], 400);
+        }
+
+        // 4. OTP correcto — limpiar y emitir JWT
+        $user->otp_code       = null;
+        $user->otp_expires_at = null;
+        $user->save();
+
+        $token = JWTAuth::fromUser($user);
+
+        SecurityLogger::adminAction('login_success_2fa', $ip, $user->email);
+
+        return $this->respondWithToken($token, $user->id);
     }
 
     // public function register(RegisterRequest $request)

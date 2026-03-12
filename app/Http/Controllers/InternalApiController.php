@@ -29,6 +29,7 @@ class InternalApiController extends Controller
     {
         try {
             $url = $this->get_url();
+            // SSL verify deshabilitado: el PMS usa certificado sin cadena completa de CA.
             $client = new \GuzzleHttp\Client(['base_uri' => $url, 'verify' => false]);
 
             // Transformar los parámetros antes de enviarlos

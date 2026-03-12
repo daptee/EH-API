@@ -20,8 +20,32 @@ class JwtMiddleware extends BaseMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        // El proxy del hosting stripea el header Authorization específicamente.
+        // Fallback 1: apache_request_headers() (por si llegara por otra vía)
+        // Fallback 2: X-Authorization (header custom que los proxies no stripean)
+        if (!$request->hasHeader('Authorization')) {
+            $auth = null;
+
+            if (function_exists('apache_request_headers')) {
+                $apacheHeaders = apache_request_headers();
+                $auth = $apacheHeaders['Authorization'] ?? $apacheHeaders['authorization'] ?? null;
+            }
+
+            if (!$auth) {
+                $auth = $request->header('X-Authorization');
+            }
+
+            if ($auth) {
+                $request->headers->set('Authorization', $auth);
+            }
+        }
+
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
+
+            if (!$user) {
+                return response()->json(['status' => 'Authorization Token not found'], 401);
+            }
         } catch (Exception $e) {
             if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
                 return response()->json(['status' => 'Token is Invalid'], 401);
