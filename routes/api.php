@@ -91,13 +91,20 @@ Route::group(['middleware' => ['jwt.verify', 'audit.log']], function () {
 
 });
 
+// Rutas públicas de internal-api-eh (sin autenticación)
+Route::prefix('internal-api-eh')
+    ->controller(InternalApiController::class)
+    ->group(function () {
+        Route::get('/Habitaciones', 'Habitaciones');
+        Route::get('/Tarifas', 'Tarifas');
+    });
+
 Route::prefix('internal-api-eh')
     ->controller(InternalApiController::class)
     ->middleware(['jwt.verify', 'audit.log'])
     ->group(function () {
         Route::get('/Naciones', 'Naciones');
         Route::get('/Naciones2', 'Naciones2');
-        Route::get('/Tarifas', 'Tarifas');
         Route::get('/Disponibilidad', 'Disponibilidad');
         Route::get('/ReservaxCodigo', 'ReservaxCodigo');
         Route::get('/PedidoxCodigo', 'PedidoxCodigo');
@@ -107,7 +114,6 @@ Route::prefix('internal-api-eh')
         Route::get('/ArticulosDestacados', 'ArticulosDestacados');
         Route::get('/TiposDocumentos', 'TiposDocumentos');
         Route::get('/Pedidos', 'Pedidos');
-        Route::get('/Habitaciones', 'Habitaciones');
         Route::get('/Reservas', 'Reservas');
         Route::get('/Calendario', 'Calendario');
         Route::post('/IniciaReserva', 'IniciaReserva');
