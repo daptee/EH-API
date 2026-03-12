@@ -38,6 +38,7 @@ Route::get('debug-auth', function (\Illuminate\Http\Request $request) {
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('login_super_admin', 'login_super_admin')->middleware('throttle:login');
+    Route::post('verify_otp_super_admin', 'verify_otp_super_admin')->middleware('throttle:login');
     // Route::post('register', 'register');
 });
 
