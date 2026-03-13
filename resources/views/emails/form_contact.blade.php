@@ -2,24 +2,27 @@
 
 @section('title', 'EH Boutique Experience - Nueva consulta web')
 
-@section('content')
-    <p>Hola,</p>
-    <p>Se recibió una nueva consulta a través del formulario de contacto de la web.</p>
+{{-- Mail interno: sin footer de contacto --}}
+@section('card_footer')
+@endsection
 
-    <table class="data-table">
+@section('content')
+    <p style="margin:0 0 20px;">Hola, se recibió una nueva consulta a través del formulario de contacto de la web.</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="data-table">
         <tr>
-            <td>Nombre</td>
+            <td><strong>Nombre:</strong></td>
             <td>{{ $data['name'] }}</td>
         </tr>
         <tr>
-            <td>Email</td>
+            <td><strong>Email:</strong></td>
             <td>{{ $data['email'] }}</td>
         </tr>
         <tr>
-            <td>Mensaje</td>
+            <td><strong>Mensaje:</strong></td>
             <td>{{ $data['message'] }}</td>
         </tr>
     </table>
 
-    <p>No tardes en responderle.</p>
+    <p style="margin:16px 0 0; font-size:14px; color:#888888;">No tardes en responderle.</p>
 @endsection
