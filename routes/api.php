@@ -11,7 +11,6 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Mail;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -131,7 +130,6 @@ Route::prefix('internal-api-eh')
 
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);
 
-// TEMPORAL: sin auth — restaurar jwt.verify cuando se resuelva el problema de headers en este entorno
 Route::get('/clear-cache', function () {
     Artisan::call('config:clear');
     Artisan::call('route:clear');
@@ -139,54 +137,3 @@ Route::get('/clear-cache', function () {
     Artisan::call('optimize');
     return response()->json(["message" => "Cache cleared successfully"]);
 });
-
-// ─── TEMPORAL: endpoints de prueba de mails — ELIMINAR DESPUÉS ───────────────
-// Body: { "to": "tucorreo@ejemplo.com" }
-// confirm-reservation acepta también: { "type": "cliente" } o { "type": "admin" }
-
-Route::post('/test/mail/confirm-reservation', function (\Illuminate\Http\Request $request) {
-    $to   = $request->input('to');
-    $type = $request->input('type', 'cliente');
-    $data = [
-        'reservation_number'   => 'RES-TEST-001',
-        'name'                 => 'Juan',
-        'last_name'            => 'Pérez',
-        'email'                => $to,
-        'phone'                => '+54 9 2966 123456',
-        'check_in'             => '2026-03-20',
-        'check_out'            => '2026-03-23',
-        'number_of_passengers' => 2,
-        'room_number'          => '101',
-    ];
-    Mail::to($to)->send(new \App\Mail\confirmReservationMailable($data, $type));
-    return response()->json(['message' => "Mail confirm-reservation ($type) enviado a $to"]);
-});
-
-Route::post('/test/mail/send-code', function (\Illuminate\Http\Request $request) {
-    $to   = $request->input('to');
-    $data = [
-        'name'               => 'Juan',
-        'suite_name'         => 'Suite Premium',
-        'room_number'        => '101',
-        'code'               => '4521',
-        'reservation_number' => 'RES-TEST-001',
-    ];
-    Mail::to($to)->send(new \App\Mail\SendCodeMail($data));
-    return response()->json(['message' => "Mail send-code enviado a $to"]);
-});
-
-Route::post('/test/mail/matriz-design', function (\Illuminate\Http\Request $request) {
-    $to   = $request->input('to');
-    $data = [
-        'name'               => 'Juan',
-        'lastname'           => 'Pérez',
-        'room_number'        => '101',
-        'reservation_number' => 'RES-TEST-001',
-        'email'              => $to,
-        'phone'              => '+54 9 2966 123456',
-        'text'               => 'Me gustaría reservar la cápsula Matriz para mañana a las 10hs.',
-    ];
-    Mail::to($to)->send(new \App\Mail\MatrizDesign($data));
-    return response()->json(['message' => "Mail matriz-design enviado a $to"]);
-});
-// ─────────────────────────────────────────────────────────────────────────────
