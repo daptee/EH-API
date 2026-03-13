@@ -1,39 +1,31 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Restablecimiento de contraseña</title>
-    <style>
-        body { font-family: Arial, Helvetica, sans-serif; color: #333; }
-        .container { max-width:600px; margin:0 auto; padding:20px; }
-        .header { padding-bottom:10px; border-bottom:1px solid #eee; }
-        .content { margin-top:20px; }
-        .password { display:inline-block; background:#f4f4f4; padding:8px 12px; border-radius:4px; font-family:monospace; }
-        .footer { margin-top:30px; font-size:12px; color:#777; }
-        a.btn { display:inline-block; background:#1a73e8; color:#fff; padding:10px 16px; border-radius:4px; text-decoration:none; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Restablecimiento de contraseña</h2>
-        </div>
-        <div class="content">
-            <p>Hola {{ $data['name'] }},</p>
-            <p>Hemos generado una nueva contraseña temporal para tu cuenta. Por favor, úsala para ingresar y luego cambia tu contraseña desde tu perfil.</p>
+@extends('emails.layout')
 
-            <p>Cuenta (email): <strong>{{ $data['email'] }}</strong></p>
+@section('title', 'Restablecimiento de contraseña')
 
-            <p>Contraseña temporal: <span class="password">{{ $data['password'] }}</span></p>
+@section('card_footer')
+@endsection
 
-            <p>Por seguridad, te recomendamos cambiar esta contraseña lo antes posible y no compartirla con terceros.</p>
-        </div>
-        <div class="footer">
-            <p>Si no solicitaste este cambio, por favor contacta con nuestro equipo de soporte.</p>
-            <p>Saludos,<br>Equipo de soporte</p>
-        </div>
-    </div>
-</body>
-</html>
+@section('content')
+    <p style="margin:0 0 14px;">Hola <strong style="color:#3E4251;">{{ $data['name'] }}</strong>,</p>
+    <p style="margin:0 0 14px;">Hemos generado una nueva contraseña temporal para tu cuenta. Usala para ingresar y luego cámbiala desde tu perfil.</p>
+    <p style="margin:0 0 24px;"><strong>Cuenta:</strong> {{ $data['email'] }}</p>
+
+    {{-- Contraseña destacada --}}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+        <tr>
+            <td align="center">
+                <p style="margin:0 0 10px; font-size:11px; font-weight:700; letter-spacing:1.5px; color:#888888; text-transform:uppercase;">Tu contraseña temporal</p>
+                <div style="display:inline-block; background:#f5f6f8; border:2px solid #3E4251; border-radius:6px; padding:14px 36px; font-size:22px; font-weight:700; font-family:'Courier New',Courier,monospace; color:#3E4251; letter-spacing:4px;">{{ $data['password'] }}</div>
+            </td>
+        </tr>
+    </table>
+
+    {{-- Alerta --}}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td style="background:#fff8e1; border-left:4px solid #f5a623; border-radius:4px; padding:12px 16px; font-size:14px; color:#7a5f00; line-height:1.6;">
+                ⚠️ <strong>Importante:</strong> Si no solicitaste este cambio, por favor contactá a soporte de inmediato.
+            </td>
+        </tr>
+    </table>
+@endsection

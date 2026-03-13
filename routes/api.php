@@ -9,11 +9,8 @@ use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\UserController;
-use App\Mail\TestMail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -25,16 +22,6 @@ use Illuminate\Support\Facades\Mail;
 |
 */
 
-// RUTA DE DIAGNÓSTICO TEMPORAL — ELIMINAR DESPUÉS
-Route::get('debug-auth', function (\Illuminate\Http\Request $request) {
-    $apacheHeaders = function_exists('apache_request_headers') ? apache_request_headers() : 'NOT AVAILABLE';
-    return response()->json([
-        'bearer_token'        => $request->bearerToken(),
-        'auth_header_laravel' => $request->header('Authorization'),
-        'all_request_headers' => $request->headers->all(),
-        'apache_headers'      => $apacheHeaders,
-    ]);
-});
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('login_super_admin', 'login_super_admin')->middleware('throttle:login');
@@ -143,27 +130,10 @@ Route::prefix('internal-api-eh')
 
 // Route::get('getNewReservationsOTA', [ReservationController::class, 'getNewReservationsOTA']);
 
-// TEMPORAL: clear-cache sin auth para desbloquear caché de rutas en DEV
 Route::get('/clear-cache', function () {
     Artisan::call('config:clear');
     Artisan::call('route:clear');
     Artisan::call('cache:clear');
     Artisan::call('optimize');
     return response()->json(["message" => "Cache cleared successfully"]);
-});
-
-// Endpoints de utilidad — requieren autenticación de admin
-Route::middleware(['jwt.verify', 'audit.log'])->group(function () {
-    // (clear-cache movido temporalmente afuera — restaurar con JWT después)
-
-    Route::get('test-mail', function () {
-        try {
-            $text = "Test de envio de mail Hielo y Aventura";
-            Mail::to("slarramendy@daptee.com.ar")->send(new TestMail("slarramendy@daptee.com.ar", $text));
-            return 'Mail enviado';
-        } catch (\Throwable $th) {
-            Log::debug(print_r([$th->getMessage(), $th->getLine()], true));
-            return 'Mail no enviado';
-        }
-    });
 });
