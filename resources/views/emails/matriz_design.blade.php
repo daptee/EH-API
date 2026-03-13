@@ -1,29 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('emails.layout')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>EH Boutique experience</title>
-</head>
+@section('title', 'Nueva solicitud Cápsula Matriz - EH Boutique Experience')
 
-<body>
-    <p>
-        Hola! Te informamos que se registro una nueva solicitd de informacion correspondiente a la capsula Matriz. <br>
-        La misma la hizo {{ $data['name'] . ' ' . $data['lastname'] }}, correspondiente a huesped de la habitacion nro {{ $data['room_number'] }} de la reserva {{ $data['reservation_number'] }}. <br>
-        Los datos de contacto son: <br>
-        <br>
-        Email: {{ $data['email'] }} <br>
-        Telefono: {{ $data['phone'] }} <br>
-        <br>
-        El mensaje que ingreso es: <br>
-        <br>
-        {{ $data['text'] }} <br>
-        <br>
-        No demores en contactarlo. <br>
-        El equipo de IT de EH
-    </p>
-</body>
+@section('card_footer')
+@endsection
 
-</html>
+@section('content')
+    <p style="margin:0 0 20px;">Se registró una nueva solicitud de información correspondiente a la <strong>Cápsula Matriz</strong>.</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="data-table" style="margin:0 0 20px;">
+        <tr>
+            <td><strong>Nombre:</strong></td>
+            <td>{{ $data['name'] }} {{ $data['lastname'] }}</td>
+        </tr>
+        <tr>
+            <td><strong>Habitación:</strong></td>
+            <td>{{ $data['room_number'] }}</td>
+        </tr>
+        <tr>
+            <td><strong>Reserva N°:</strong></td>
+            <td>{{ $data['reservation_number'] }}</td>
+        </tr>
+        <tr>
+            <td><strong>Email:</strong></td>
+            <td>{{ $data['email'] }}</td>
+        </tr>
+        <tr>
+            <td><strong>Teléfono:</strong></td>
+            <td>{{ $data['phone'] }}</td>
+        </tr>
+    </table>
+
+    <p style="margin:0 0 8px; font-size:14px; color:#555555;"><strong>Mensaje:</strong></p>
+    <p style="margin:0; font-size:14px; color:#444444; background:#f5f6f8; border-radius:6px; padding:14px 18px; line-height:1.6;">{{ $data['text'] }}</p>
+@endsection

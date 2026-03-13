@@ -1,28 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>EH Boutique experience - Codigo ingreso</title>
-</head>
-<body>
-    <p>
-        Buenas tardes {{ $data['name'] }}, <br>
-        <br>
-        Le informamos que el código para ingresar a su SUITE {{ $data['suite_name'] ?? $data['room_number'] }} es: <br>
-        <br>
-        <strong style="display: block; text-align: center; font-size: 1.2em;">{{ $data['code'] }}</strong> <br>
-        <br>
-        Esto corresponde a su reserva num: {{ $data['reservation_number'] }}. <br>
-        <br>
-        Muchas gracias por elegirnos! <br>
-        <br>
-        No dude en contactarse con nosotros en caso de necesitarlo al +54 9 2966 38-5468 <br>
-        <br>
-        Estamos a disposición para lo que necesite. <br>
-        <br>
-        Equipo EHBE.
-    </p>
-</body>
-</html>
+@extends('emails.layout')
+
+@section('title', 'Código de ingreso - EH Boutique Experience')
+
+@section('content')
+    <p style="margin:0 0 14px;">Hola <strong style="color:#3E4251;">{{ $data['name'] }}</strong>,</p>
+    <p style="margin:0 0 24px;">Te informamos que el código para ingresar a tu suite es el siguiente:</p>
+
+    {{-- Código destacado --}}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+        <tr>
+            <td align="center">
+                <p style="margin:0 0 10px; font-size:11px; font-weight:700; letter-spacing:1.5px; color:#888888; text-transform:uppercase;">Código de ingreso · Suite {{ $data['suite_name'] ?? $data['room_number'] }}</p>
+                <div style="display:inline-block; background:#f5f6f8; border:2px solid #3E4251; border-radius:6px; padding:14px 36px; font-size:36px; font-weight:700; font-family:'Courier New',Courier,monospace; color:#3E4251; letter-spacing:10px;">{{ $data['code'] }}</div>
+                <p style="margin:10px 0 0; font-size:13px; color:#888888;">Reserva N° <strong>{{ $data['reservation_number'] }}</strong></p>
+            </td>
+        </tr>
+    </table>
+
+    <p style="margin:0; font-size:14px; color:#666666;">Estamos a disposición para lo que necesites. ¡Bienvenido/a!</p>
+@endsection
