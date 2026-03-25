@@ -20,41 +20,64 @@ class JwtMiddleware extends BaseMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // El proxy del hosting stripea el header Authorization específicamente.
-        // Fallback 1: apache_request_headers() (por si llegara por otra vía)
-        // Fallback 2: X-Authorization (header custom que los proxies no stripean)
-        if (!$request->hasHeader('Authorization')) {
-            $auth = null;
-
-            if (function_exists('apache_request_headers')) {
-                $apacheHeaders = apache_request_headers();
-                $auth = $apacheHeaders['Authorization'] ?? $apacheHeaders['authorization'] ?? null;
-            }
-
-            if (!$auth) {
-                $auth = $request->header('X-Authorization');
-            }
-
-            if ($auth) {
-                $request->headers->set('Authorization', $auth);
-            }
-        }
-
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            // Intentar con el request normal (Authorization header estándar)
+            $user = JWTAuth::setRequest($request)->parseToken()->authenticate();
 
             if (!$user) {
                 return response()->json(['status' => 'Authorization Token not found'], 401);
             }
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['status' => 'Token is Invalid'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            return response()->json(['status' => 'Token is Expired'], 401);
         } catch (Exception $e) {
-            if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
+            // Authorization header no encontrado — intentar fallbacks
+            $token = $this->extractTokenFromFallbacks($request);
+
+            if (!$token) {
+                return response()->json(['status' => 'Authorization Token not found'], 401);
+            }
+
+            try {
+                // Setear el token directamente en JWTAuth, sin depender de headers
+                $user = JWTAuth::setToken($token)->authenticate();
+
+                if (!$user) {
+                    return response()->json(['status' => 'Authorization Token not found'], 401);
+                }
+            } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
                 return response()->json(['status' => 'Token is Invalid'], 401);
-            } else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {
+            } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
                 return response()->json(['status' => 'Token is Expired'], 401);
-            } else {
+            } catch (Exception $e) {
                 return response()->json(['status' => 'Authorization Token not found'], 401);
             }
         }
+
         return $next($request);
+    }
+
+    private function extractTokenFromFallbacks(Request $request): ?string
+    {
+        $auth = null;
+
+        // Fallback 1: apache_request_headers() — por si el proxy lo pasa de otra forma
+        if (function_exists('apache_request_headers')) {
+            $apacheHeaders = apache_request_headers();
+            $auth = $apacheHeaders['Authorization'] ?? $apacheHeaders['authorization'] ?? null;
+        }
+
+        // Fallback 2: header X-Authorization
+        if (!$auth) {
+            $auth = $request->header('X-Authorization');
+        }
+
+        if (!$auth) {
+            return null;
+        }
+
+        // Quitar el prefijo "Bearer " si viene incluido
+        return preg_replace('/^Bearer\s+/i', '', trim($auth));
     }
 }
