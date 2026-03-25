@@ -15,7 +15,37 @@ class ObtenerReservasPxSol extends Command
     public function handle()
     {
         // $this->info('Iniciando sincronización de reservas...');
-        $bookings = $this->fetchAllBookings();
+
+        // Reservas nuevas: filtrar por fecha de creación (últimos 5 días)
+        $newBookings = $this->fetchAllBookings([
+            'created_from' => now()->subDays(5)->format('Y-m-d'),
+            'created_to'   => now()->format('Y-m-d'),
+        ]);
+
+        // Cancelaciones: filtrar por fecha de actualización (últimos 2 días)
+        // Una reserva cancelada actualiza su updated_at independientemente de cuándo fue creada
+        $updatedBookings = $this->fetchAllBookings([
+            'updated_from' => now()->subDays(2)->format('Y-m-d'),
+            'updated_to'   => now()->format('Y-m-d'),
+        ]);
+
+        // Unificar evitando duplicados por booking_id
+        $allBookingsById = [];
+        foreach ($newBookings as $b) {
+            $allBookingsById[$b['booking_id']] = ['booking' => $b, 'process' => 'new'];
+        }
+        foreach ($updatedBookings as $b) {
+            if (!isset($allBookingsById[$b['booking_id']])) {
+                // Solo aparece en updated → es una cancelación de reserva antigua
+                $allBookingsById[$b['booking_id']] = ['booking' => $b, 'process' => 'cancellation_only'];
+            }
+        }
+
+        $bookings = array_column($allBookingsById, 'booking');
+        $processMap = [];
+        foreach ($allBookingsById as $id => $entry) {
+            $processMap[$id] = $entry['process'];
+        }
 
         $payloads = [];
         $array_rooms = [
@@ -67,6 +97,10 @@ class ObtenerReservasPxSol extends Command
                 $room_id = $room['room_id'];
                 $status_id = $booking['status'];
 
+                // Las reservas que vienen solo del filtro updated (cancellation_only)
+                // no deben procesarse como nuevas aunque tengan status 3
+                $process = $processMap[$bookingId] ?? 'new';
+
                 if ($status_id == 1) {
                     try {
                         $params = [
@@ -92,7 +126,7 @@ class ObtenerReservasPxSol extends Command
                             'message' => $e->getMessage()
                         ]);
                     }
-                } else if ($status_id == 3) {
+                } else if ($status_id == 3 && $process !== 'cancellation_only') {
                     $payload = [
                         "DESDE" => $checkin,
                         "HASTA" => $checkout,
@@ -136,21 +170,17 @@ class ObtenerReservasPxSol extends Command
         return $environment === "DEV" ? "https://apieh.ehboutiqueexperience.com:9096" : "https://apieh.ehboutiqueexperience.com:8086";
     }
 
-    protected function fetchAllBookings()
+    protected function fetchAllBookings(array $dateFilters = [])
     {
         $allBookings = [];
         $page = 1;
 
         do {
-            $createdFrom = now()->subDays(5)->format('Y-m-d');
-            $createdTo = now()->format('Y-m-d');
-
             $response = Http::withToken(config('services.pxsol_api_key_token'))
-                ->get('https://gateway-prod.pxsol.com/v2/booking/list', [
-                    'current_page' => $page,
-                    'created_from' => $createdFrom,
-                    'created_to' => $createdTo,
-                ]);
+                ->get('https://gateway-prod.pxsol.com/v2/booking/list', array_merge(
+                    ['current_page' => $page],
+                    $dateFilters
+                ));
 
             if (!$response->successful()) {
                 Log::channel('pxsol')->error("Error al obtener página $page", [
@@ -168,7 +198,10 @@ class ObtenerReservasPxSol extends Command
             $page++;
         } while (($meta['current_page'] ?? 1) < ($meta['last_page'] ?? 1));
 
-        Log::channel('pxsol')->info("Total de reservas obtenidas", ['count' => count($allBookings)]);
+        Log::channel('pxsol')->info("Total de reservas obtenidas", [
+            'count'   => count($allBookings),
+            'filters' => $dateFilters,
+        ]);
 
         return $allBookings;
     }
