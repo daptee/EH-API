@@ -6,6 +6,7 @@ use App\Http\Controllers\EmergencyController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\PxsolController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\UserController;
@@ -72,6 +73,9 @@ Route::group(['middleware' => ['jwt.verify', 'audit.log']], function () {
 
     // Emergency: reset masivo de contraseñas (solo super admin)
     Route::post('admin/emergency-reset-passwords', [EmergencyController::class, 'resetAllPasswords']);
+
+    // PXSOL: procesar cancelaciones manualmente por rango de días
+    Route::post('admin/pxsol/process-cancellations', [PxsolController::class, 'processCancellations']);
 
     // User Controller
     // Route::post('users/update', [UserController::class, 'update']);
