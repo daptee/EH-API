@@ -32,6 +32,10 @@ class PxsolController extends Controller
             'days' => 'required|integer|min:1|max:365',
         ]);
 
+        if (config('app.environment') !== 'PROD') {
+            return response()->json(['message' => 'Este endpoint solo puede ejecutarse en producción.'], 403);
+        }
+
         $user = Auth::user();
         if ($user->user_type_id !== UserType::SUPERADMIN) {
             return response()->json(['message' => 'No autorizado.'], 403);
