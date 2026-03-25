@@ -27,10 +27,10 @@ class JwtMiddleware extends BaseMiddleware
             if (!$user) {
                 return response()->json(['status' => 'Authorization Token not found'], 401);
             }
-        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            return response()->json(['status' => 'Token is Invalid'], 401);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
             return response()->json(['status' => 'Token is Expired'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['status' => 'Token is Invalid'], 401);
         } catch (Exception $e) {
             // Authorization header no encontrado — intentar fallbacks
             $token = $this->extractTokenFromFallbacks($request);
@@ -46,10 +46,10 @@ class JwtMiddleware extends BaseMiddleware
                 if (!$user) {
                     return response()->json(['status' => 'Authorization Token not found'], 401);
                 }
-            } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-                return response()->json(['status' => 'Token is Invalid'], 401);
             } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
                 return response()->json(['status' => 'Token is Expired'], 401);
+            } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+                return response()->json(['status' => 'Token is Invalid'], 401);
             } catch (Exception $e) {
                 return response()->json(['status' => 'Authorization Token not found'], 401);
             }
