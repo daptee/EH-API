@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ExcursionForm;
+use App\Mail\TransferForm;
 use App\Mail\FormContact;
 use App\Mail\MatrizDesign;
 use Illuminate\Http\Request;
@@ -51,6 +52,30 @@ class FormController extends Controller
             Mail::to($mail_to)->send(new ExcursionForm($data));
         } catch (Exception $error) {
             Log::debug(print_r(["message" => $error->getMessage() . " error en envio de mail excursion form", $error->getLine()], true));
+            return response()->json(["message" => "Error en envio de mail: " . $error->getMessage()], 400);
+        }
+
+        return response()->json(['message' => 'Solicitud enviada con éxito.']);
+    }
+
+    public function transfer_form(Request $request)
+    {
+        $request->validate([
+            'name'          => 'required',
+            'lastname'      => 'required',
+            'email'         => 'required|email',
+            'phone'         => 'required',
+            'message'       => 'required',
+            'transfer_name' => 'required',
+        ]);
+
+        $data = $request->all();
+
+        try {
+            $mail_to = array_map('trim', explode(',', config('services.mail_to_excursions_form')));
+            Mail::to($mail_to)->send(new TransferForm($data));
+        } catch (Exception $error) {
+            Log::debug(print_r(["message" => $error->getMessage() . " error en envio de mail transfer form", $error->getLine()], true));
             return response()->json(["message" => "Error en envio de mail: " . $error->getMessage()], 400);
         }
 
