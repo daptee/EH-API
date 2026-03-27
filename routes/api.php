@@ -58,6 +58,7 @@ Route::middleware(['jwt.verify', 'audit.log'])->get('reservations/by/reservation
 // Form controller
 Route::post('form/contact', [FormController::class, 'form_contact']);
 Route::post('excursions/form', [FormController::class, 'excursion_form']);
+Route::post('transfers/form', [FormController::class, 'transfer_form']);
 
 // Newsletter
 Route::post('newsletter/register/email', [NewsletterController::class, 'newsletter_register_email']);
